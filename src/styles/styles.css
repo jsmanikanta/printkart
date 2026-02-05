@@ -5,17 +5,15 @@
   border-bottom: 1px solid #e6e6e6;
 }
 
-/* ===== HEADER CONTENT ===== */
 .header-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 24px;              /* FIX: proper vertical padding */
+  padding: 10px 24px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-/* ===== LOGO ===== */
 .logo {
   margin: 0;
   display: flex;
@@ -29,13 +27,12 @@
 }
 
 .logo img {
-  height: 44px;                    /* FIX: stable logo size */
+  height: 44px;
   width: auto;
   object-fit: contain;
   cursor: pointer;
 }
 
-/* ===== HEADER ACTIONS ===== */
 .header-actions {
   display: flex;
   align-items: center;
@@ -60,7 +57,7 @@
 .user-avatar img {
   width: 100%;
   height: 100%;
-  object-fit: cover;              /* FIX: no weird shrinking */
+  object-fit: cover; /* FIX: no weird shrinking */
 }
 
 .login-text {
@@ -90,7 +87,6 @@
   color: #333;
 }
 
-/* ===== CART ===== */
 .cart-section {
   display: flex;
   align-items: center;
@@ -110,10 +106,9 @@
   color: #333;
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
+@media (max-width: 500px) {
   .header-content {
-    padding: 8px 16px;
+    padding: 5px 16px;
   }
 
   .header-actions {
@@ -123,7 +118,13 @@
   .login-text,
   .help-text,
   .cart-text {
-    font-size: 12px;
+    font-size: 10px;
+  }
+  .logo img {
+    height: 40px;
+    width: 70%;
+    object-fit: contain;
+    cursor: pointer;
   }
 }
 
@@ -138,8 +139,8 @@
 }
 
 .hero-background {
-  background-image: url("your-image.jpg"); 
-  background-size: cover; 
+  background-image: url("your-image.jpg");
+  background-size: cover;
   background-position: center;
   border-radius: 5px;
   margin: 5px;
@@ -152,7 +153,7 @@
   background-color: #57c97a;
   border-radius: 5px;
   align-items: center;
-  justify-content: space-between; 
+  justify-content: space-between;
   position: relative;
   z-index: 2;
 }
@@ -160,7 +161,7 @@
 .hero-text h2 {
   font-family: "Instrument Sans", sans-serif;
   font-weight: 1000;
-  font-size: 24px; 
+  font-size: 24px;
   color: #000000;
 
   line-height: 1.2;
@@ -199,7 +200,7 @@
 }
 
 .search-bar input:focus {
-  border-color: #f27909; 
+  border-color: #f27909;
   box-shadow: 0 0 4px rgba(242, 121, 9, 0.5);
 }
 
@@ -233,7 +234,7 @@
 
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); 
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-bottom: 15px;
 }
@@ -288,7 +289,7 @@
 
 .printout-categories {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); 
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin-bottom: 15px;
 }
@@ -472,8 +473,8 @@ body {
 }
 
 .book-card {
-  border-radius: 10px; 
-  padding: 10px 15px; 
+  border-radius: 10px;
+  padding: 10px 15px;
   position: relative;
   overflow: hidden;
   min-height: 75px;
@@ -485,7 +486,7 @@ body {
 .book-cards1 {
   display: grid;
 
-  gap: 10px; 
+  gap: 10px;
 }
 
 .book-image {
@@ -494,19 +495,19 @@ body {
   bottom: -15px;
   width: 100px;
   height: 50px;
-  opacity: 0.5; 
+  opacity: 0.5;
   z-index: 1;
 }
 
 .book-image img {
   width: 100%;
   height: 100%;
-  object-fit: contain; 
+  object-fit: contain;
 }
 
 .book-info {
   position: relative;
-  z-index: 10; 
+  z-index: 10;
   max-width: 65%;
 }
 
@@ -523,7 +524,7 @@ body {
   font-family: "Inter", sans-serif;
   font-weight: 500;
   font-size: 10px;
-  color: #0c0c0c; 
+  color: #0c0c0c;
   line-height: 1.3;
 }
 
@@ -549,7 +550,7 @@ body {
   border-bottom: 3px solid transparent;
 }
 .category-tab-btn.active {
-  color: #4c80e6; 
+  color: #4c80e6;
   border-bottom: 3px solid #4c80e6;
 }
 
@@ -643,11 +644,11 @@ body {
   align-items: center;
   gap: 2px;
   cursor: pointer;
-  flex: 1; 
+  flex: 1;
 }
 
 .nav-item img {
-  width: 24px; 
+  width: 24px;
   height: 24px;
   object-fit: contain;
 }
@@ -668,7 +669,7 @@ body {
   justify-content: space-around;
   padding: 0 15px;
   margin-bottom: 20px;
-  border-bottom: 1px solid #e0e0e0; 
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .category-tab-btn {
@@ -696,7 +697,6 @@ body {
 }
 
 .tab-content.active-tab {
-
   display: block;
 }
 
@@ -736,7 +736,7 @@ body {
 /* Styling for the banner container */
 .print-banner {
   width: 100%;
-  overflow: hidden; 
+  overflow: hidden;
   margin-bottom: 10px;
 }
 
@@ -896,14 +896,16 @@ body {
   padding: 12px 0;
   border: none;
   border-radius: 7px;
-  background:rgb(197, 138, 29);
+  background: rgb(197, 138, 29);
   color: #232323;
   font-weight: bold;
   font-size: 1.09rem;
   cursor: pointer;
   box-shadow: 0 2px 12px #e7eedb80;
   margin-bottom: 6px;
-  transition: background 0.18s, color 0.18s;
+  transition:
+    background 0.18s,
+    color 0.18s;
 }
 .auth-btn:hover {
   background-color: black;

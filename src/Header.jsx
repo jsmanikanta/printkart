@@ -9,13 +9,11 @@ function Header() {
   const [userName, setUserName] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Navigation handlers
   const goToLogin = () => navigate("/login");
   const goToCart = () => navigate("/prints-cart");
   const goToHome = () => navigate("/");
   const goToHelp = () => navigate("/help");
 
-  // Fetch user profile on mount
   useEffect(() => {
     const fetchUserProfile = async () => {
       setLoading(true);
@@ -55,10 +53,10 @@ function Header() {
   return (
     <header className="header">
       <div className="header-content">
-        {/* LEFT LOGO */}
         <div className="logo" onClick={goToHome}>
-            <img src="/images/middle.jpeg" alt="PrintKart" />
+          <img src="/images/middle.jpeg" alt="PrintKart" />
         </div>
+
         <div className="header-actions">
           <div className="user-profile" onClick={goToLogin}>
             <div className="user-avatar">
