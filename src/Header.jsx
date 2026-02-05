@@ -55,15 +55,9 @@ function Header() {
   return (
     <header className="header">
       <div className="header-content">
-        <h1 className="logo">
-          <a href="https://mybookhub.onrender.com/">
-            <span className="orange">My</span>
-            <span className="black">Book</span>
-            <span className="gray">Hub</span>
-          </a>
-        </h1>
-        <div className="center-logo">
-          <img src="/images/middle.jpeg" className="printlogo" alt="Print Logo" onClick={goToHome}/>
+        {/* LEFT LOGO */}
+        <div className="logo" onClick={goToHome}>
+            <img src="/images/middle.jpeg" alt="PrintKart" />
         </div>
         <div className="header-actions">
           <div className="user-profile" onClick={goToLogin}>
@@ -72,10 +66,12 @@ function Header() {
             </div>
             <span className="login-text">{userName ? userName : "Login"}</span>
           </div>
+
           <div className="help-section" onClick={goToHelp}>
             <img src="/images/help-icon.png" alt="Help" className="help-icon" />
             <span className="help-text">Help</span>
           </div>
+
           <div className="cart-section" onClick={goToCart}>
             <img src="/images/cart-icon.png" alt="Cart" className="cart-icon" />
             <span className="cart-text">My Bag</span>

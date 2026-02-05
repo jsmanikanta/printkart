@@ -758,6 +758,17 @@ export default function OrderPrints() {
               {loading ? "Placing Order..." : "Place Order"}
             </button>
           </form>
+
+          <div className="auth-btn-wrapper">
+            <button
+              className="auth-btn"
+              onClick={() =>
+                (window.location.href = "https://mybookhub.onrender.com")
+              }
+            >
+              Back to MyBookHub
+            </button>
+          </div>
         </div>
       )}
     </>
