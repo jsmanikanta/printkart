@@ -117,26 +117,26 @@
   .login-text,
   .help-text,
   .cart-text {
-    font-size: 10px;
+    font-size: 8px;
   }
   .logo img {
-    height: 40px;
-    width: 70%;
+    height: 50px;
+    width: 80%;
     object-fit: contain;
     cursor: pointer;
   }
   .user-avatar img {
-    width: 70%;
-    height: 70%;
+    width: 60%;
+    height: 60%;
   }
   .user-avatar {
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     overflow: hidden;
   }
   .login-text {
-    font-size: 10px;
+    font-size: 8px;
     font-weight: 500;
     color: #333;
     line-height: 1;
@@ -149,13 +149,13 @@
   }
 
   .help-icon {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
     object-fit: contain;
   }
 
   .help-text {
-    font-size: 10px;
+    font-size: 8px;
     line-height: 1;
     color: #333;
   }
@@ -168,13 +168,13 @@
   }
 
   .cart-icon {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
     object-fit: contain;
   }
 
   .cart-text {
-    font-size: 10px;
+    font-size: 8px;
     line-height: 1;
     color: #333;
   }
@@ -968,4 +968,5 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-bottom: 0px;
 }
