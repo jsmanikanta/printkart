@@ -62,7 +62,9 @@ function Header() {
             <span className="gray">Hub</span>
           </a>
         </h1>
-
+        <div className="center-logo">
+          <img src="/images/middle.jpeg" className="printlogo" alt="Print Logo" onClick={goToHome}/>
+        </div>
         <div className="header-actions">
           <div className="user-profile" onClick={goToLogin}>
             <div className="user-avatar">

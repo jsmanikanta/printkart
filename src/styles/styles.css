@@ -7,6 +7,35 @@
   box-sizing: border-box;
 }
 
+.header {
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.header-content {
+  position: relative;          /* IMPORTANT */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+}
+
+/* Center logo container */
+.center-logo {
+  position: absolute;          /* KEY PART */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Print logo */
+.printlogo {
+  height: 45px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+
 .bottom-nav {
   position: fixed;
   left: 0;
@@ -97,13 +126,12 @@ body {
 .logo {
   font-family: "Inter", sans-serif;
   font-weight: 900;
-  font-size: 15px;
+  font-size: 20px;
   line-height: 1.2;
   cursor: pointer;
   user-select: none;
   flex-shrink: 0;
   white-space: nowrap;
-  padding-top: 13px;
 }
 
 .logo .orange {
