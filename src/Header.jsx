@@ -34,7 +34,7 @@ function Header() {
 
         if (response.data && response.data.user) {
           setUserName(
-            response.data.user.fullname || response.data.user.name || null
+            response.data.user.fullname || response.data.user.name || null,
           );
         } else {
           setUserName(null);
@@ -55,11 +55,14 @@ function Header() {
   return (
     <header className="header">
       <div className="header-content">
-        <h1 className="logo" onClick={goToHome}>
-          <span className="orange">My</span>
-          <span className="black">Book</span>
-          <span className="gray">Hub</span>
+        <h1 className="logo">
+          <a href="https://mybookhub.onrender.com/">
+            <span className="orange">My</span>
+            <span className="black">Book</span>
+            <span className="gray">Hub</span>
+          </a>
         </h1>
+
         <div className="header-actions">
           <div className="user-profile" onClick={goToLogin}>
             <div className="user-avatar">
