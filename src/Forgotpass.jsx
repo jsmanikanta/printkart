@@ -1,23 +1,27 @@
 import React, { useState } from "react";
 import "./styles/forgotpass.css";
 import logoImg from "/images/logo.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { api_path } from "../data";
 import Loader from "./Loading";
 
 export default function ForgotPassword() {
+  const navigate = useNavigate();
+
   const [identifier, setIdentifier] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+
   const goToLogin = () => navigate("/login");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-    const goToLogin = () => navigate("/login");
+
     if (!identifier || !newPassword || !confirm) {
       setError("All fields are required.");
       return;
@@ -38,14 +42,19 @@ export default function ForgotPassword() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier, newPassword }),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unknown error");
+
       setSuccess("Password reset successful! You can now login.");
       setIdentifier("");
       setNewPassword("");
       setConfirm("");
+
+      // optional: auto redirect after success
+      // setTimeout(() => navigate("/login"), 1000);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -60,6 +69,7 @@ export default function ForgotPassword() {
           <form className="resetpw-container" onSubmit={handleSubmit}>
             <img src={logoImg} className="resetpw-logo" alt="Logo" />
             <h2 className="resetpw-title">Reset Password</h2>
+
             <input
               className="resetpw-input"
               type="text"
@@ -68,6 +78,7 @@ export default function ForgotPassword() {
               onChange={(e) => setIdentifier(e.target.value)}
               required
             />
+
             <input
               className="resetpw-input"
               type="password"
@@ -76,6 +87,7 @@ export default function ForgotPassword() {
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
+
             <input
               className="resetpw-input"
               type="password"
@@ -84,14 +96,16 @@ export default function ForgotPassword() {
               onChange={(e) => setConfirm(e.target.value)}
               required
             />
+
             {error && <div className="resetpw-error">{error}</div>}
             {success && <div className="resetpw-success">{success}</div>}
+
             <button className="resetpw-btn" type="submit" disabled={loading}>
               {loading ? "Saving..." : "Reset Password"}
             </button>
-            <div className="resetpw-back" onClick={goToLogin}>
-              <a href="/login">Back to Login</a>
-            </div>
+            <Link className="resetpw-back" to="/login">
+              Back to Login
+            </Link>
           </form>
         </div>
       )}
