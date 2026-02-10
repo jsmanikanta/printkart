@@ -8,7 +8,38 @@
   flex-direction: column;
 }
 
-/* Tabs (CLASS ROOM / HOME DELIVERY) */
+.back-btn-wrapper {
+  display: flex;
+  justify-content: center;   /* center horizontally */
+  align-items: center;       /* center vertically */
+  margin: 40px 0;            /* spacing from top/bottom */
+}
+
+.back-link {
+  text-decoration: none;     /* remove underline */
+}
+
+.back-btn {
+  background-color: #dea20b; 
+  color: #ffffff;            /* white text */
+  border: none;
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.back-btn:hover {
+  background-color: #05200f;
+  transform: translateY(-2px);
+}
+
+.back-btn:active {
+  transform: translateY(0);
+}
+
 .order-tabs {
   display: flex;
   justify-content: center;
