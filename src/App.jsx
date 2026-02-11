@@ -8,6 +8,7 @@ import Signup from "./Signup";
 import Login from "./Login";
 import ForgotPassword from "./Forgotpass";
 import Footer from "./Footer";
+import Profile from "./Profile"
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/prints-cart" element={<Cart />} />
         <Route path="/" element={<OrderPrints />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
+        <Route path="/profile" element={<Profile/>} />
         <Route path="/help" element={<VideoHelpSection />} />
       </Routes>
       <Footer />
