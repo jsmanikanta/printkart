@@ -47,7 +47,7 @@ export default function Profile() {
 
   // Navigation
   const goToLogin = () => navigate("/login");
-  const goToPickupAddress = () => navigate("/cominsoon");
+  const goToPickupAddress = () => navigate("/mylocations");
   const goToWishlist = () => navigate("/comminsoon");
   const goToOrderHistory = () => navigate("/commingsoon");
   const goToHelp = () => navigate("/help");
@@ -123,8 +123,7 @@ export default function Profile() {
         {branch ? <div className="profile-text">Branch: {branch}</div> : null}
         {rollno ? <div className="profile-text">Roll No: {rollno}</div> : null}
       </div>
-
-      {/* Menu */}
+      <br />
       <div className="profile-menu">
         <MenuItem
           title="Pickup Address"
