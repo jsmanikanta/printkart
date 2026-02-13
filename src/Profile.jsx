@@ -25,7 +25,6 @@ export default function Profile() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const u = response?.data;
-
         if (u && u._id) {
           setUser(u);
         } else {
@@ -45,15 +44,12 @@ export default function Profile() {
     fetchUserProfile();
   }, []);
 
-  // Navigation
   const goToLogin = () => navigate("/login");
   const goToPickupAddress = () => navigate("/mylocations");
-  const goToWishlist = () => navigate("/comminsoon");
-  const goToOrderHistory = () => navigate("/commingsoon");
-  const goToHelp = () => navigate("/help");
-  const goToSettings = () => navigate("/comingsoon");
-
-  // Loading UI
+  const goToWishlist = () => navigate("/soon");
+  const goToOrderHistory = () => navigate("/soon");
+  const goToFaq = () => navigate("/faq");
+  const goToSettings = () => navigate("/settings");
   if (loading) {
     return (
       <div className="profile-loading">
@@ -62,7 +58,6 @@ export default function Profile() {
     );
   }
 
-  // Not logged in UI
   if (!user) {
     return (
       <div className="profile-login-prompt">
@@ -73,6 +68,7 @@ export default function Profile() {
       </div>
     );
   }
+
   const name = user?.fullname || "User";
   const email = user?.email || "";
   const phone = user?.mobileNumber || "";
@@ -89,7 +85,6 @@ export default function Profile() {
 
   return (
     <div className="profile-page">
-      {/* Profile Card */}
       <div className="profile-card">
         <div className="profile-avatar">
           <svg width="52" height="52" viewBox="0 0 24 24" fill="none">
@@ -102,10 +97,12 @@ export default function Profile() {
 
         <div className="profile-info">
           <div className="profile-name">{String(name).toUpperCase()}</div>
-          {email ? <div className="profile-textmain">{email}</div> : null}
-          {phone ? <div className="profile-textmain">{phone}</div> : null}
+          {email ? <div className="profile-texth">{email}</div> : null}
+          {phone ? <div className="profile-texth">{phone}</div> : null}
         </div>
       </div>
+      <br />
+
       <div className="profile-details">
         {usertype ? (
           <div className="profile-text">User Type: {usertype}</div>
@@ -123,7 +120,8 @@ export default function Profile() {
         {branch ? <div className="profile-text">Branch: {branch}</div> : null}
         {rollno ? <div className="profile-text">Roll No: {rollno}</div> : null}
       </div>
-      <br />
+
+      {/* Menu */}
       <div className="profile-menu">
         <MenuItem
           title="Pickup Address"
@@ -133,26 +131,27 @@ export default function Profile() {
         />
         <MenuItem title="Wishlist" icon="♡" onClick={goToWishlist} />
         <MenuItem title="Order History" icon="⏱" onClick={goToOrderHistory} />
-        <MenuItem title="Help & Support" icon="🎧" onClick={goToHelp} />
-        <MenuItem title="Setting" icon="⚙️" arrow onClick={goToSettings} />
+        <MenuItem title="Settings" icon="⚙️" arrow onClick={goToSettings} />
+        <MenuItem
+          title="Frequently Asked questions (FAQ's)"
+          icon="❓"
+          arrow
+          onClick={goToFaq}
+        />
       </div>
     </div>
   );
 }
 
-function MenuItem({ title, icon, arrow, onClick }) {
+function MenuItem({ title, icon, onClick }) {
   return (
-    <button className="profile-menu-item" onClick={onClick} type="button">
-      <div className="profile-menu-left">
-        <span className="profile-menu-icon">{icon}</span>
-        <span className="profile-menu-title">{title}</span>
+    <div className="menu-item" onClick={onClick}>
+      <div className="menu-left">
+        <span className="menu-icon">{icon}</span>
+        <span className="menu-title">{title}</span>
       </div>
 
-      {arrow ? (
-        <span className="profile-menu-arrow">›</span>
-      ) : (
-        <span className="profile-menu-empty" />
-      )}
-    </button>
+      <span className="menu-arrow">›</span>
+    </div>
   );
 }

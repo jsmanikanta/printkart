@@ -11,6 +11,9 @@ import Footer from "./Footer";
 import Profile from "./Profile";
 import Addlocation from "./Addlocation";
 import PickupAddress from "./Getlocations";
+import Settings from "./Settings";
+import StudentInformation from "./Studentinfo";
+import FAQ from "./Faq";
 
 function App() {
   return (
@@ -26,6 +29,9 @@ function App() {
         <Route path="/help" element={<VideoHelpSection />} />
         <Route path="/mylocations" element={<PickupAddress />} />
         <Route path="/addlocation" element={<Addlocation />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/student-details" element={<StudentInformation />} />
+        <Route path="/faq" element={<FAQ />} />
       </Routes>
       <Footer />
     </>
