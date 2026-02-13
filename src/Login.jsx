@@ -52,9 +52,7 @@ function Login() {
 
       if (data?.success && data?.token) {
         localStorage.setItem("token", data.token);
-
-        // Navigate first
-        navigate("/profile", { replace: true });
+        navigate("/", { replace: true });
 
         // Then force full reload
         window.location.reload();
