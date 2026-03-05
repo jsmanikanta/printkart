@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Loader from "../../frontend/src/Loading";
-import { api_path } from "../../frontend/data";
+import Loader from "./Loading";
+import { api_path } from "../data";
 import "./styles/adminprints.css";
 
 export default function AdminPrints() {
