@@ -12,6 +12,7 @@ import Profile from "./Profile";
 import Addlocation from "./Addlocation";
 import PickupAddress from "./Getlocations";
 import Settings from "./Settings";
+import AdminPrints from "./AdminPrints";
 import StudentInformation from "./Studentinfo";
 import FAQ from "./Faq";
 
@@ -19,23 +20,24 @@ function App() {
   return (
     <>
       <Header />
-    <Routes>
+      <Routes>
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/prints-cart" element={<Cart />} />
         <Route path="/" element={<OrderPrints />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
-        <Route path="/profile" element={<Profile/>} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/help" element={<VideoHelpSection />} />
         <Route path="/mylocations" element={<PickupAddress />} />
         <Route path="/addlocation" element={<Addlocation />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/student-details" element={<StudentInformation />} />
         <Route path="/faq" element={<FAQ />} />
+        <Route path="/admin" element={<AdminPrints />} />
       </Routes>
       <Footer />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import * as pdfjsLib from "pdfjs-dist/build/pdf";
 import "pdfjs-dist/build/pdf.worker.mjs";
@@ -42,31 +42,45 @@ const PAYMENT_OPTIONS = [
 
 export default function OrderPrints() {
   const navigate = useNavigate();
+  const API = import.meta.env.VITE_API_PATH;
 
   const [activeTab, setActiveTab] = useState("student");
+
   const [file, setFile] = useState(null);
   const [pages, setPages] = useState(0);
   const [pdfError, setPdfError] = useState("");
+
   const [color, setColor] = useState("b/w");
   const [sides, setSides] = useState("1");
   const [binding, setBinding] = useState("none");
   const [copies, setCopies] = useState(1);
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
+
   const [transactionImage, setTransactionImage] = useState(null);
   const [payment, setPayment] = useState("payondelivery");
+  const [calcError, setCalcError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  // form fields
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [rollno, setRollNo] = useState("");
   const [college, setCollege] = useState("");
   const [year, setYear] = useState("");
   const [section, setSection] = useState("");
+
+  // pricing
   const [originalPrice, setOriginalPrice] = useState(0);
   const [discountPrice, setDiscountPrice] = useState(0);
   const [printCost, setPrintCost] = useState(0);
   const [discountValue, setDiscountValue] = useState(0);
   const [bindingCost, setBindingCost] = useState(0);
+
+  // coupon
   const [couponCode, setCouponCode] = useState("");
   const [couponInfo, setCouponInfo] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
@@ -74,12 +88,50 @@ export default function OrderPrints() {
   const [couponDiscountAmount, setCouponDiscountAmount] = useState(0);
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+  const token = useMemo(() => localStorage.getItem("token")?.trim(), []);
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-    }
-  }, [navigate]);
+    if (!token) navigate("/login");
+  }, [navigate, token]);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!token) return;
+
+      setProfileLoading(true);
+      try {
+        const res = await fetch(`${API}/user/profile`, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          setProfileLoading(false);
+          return;
+        }
+
+        const profile = await res.json();
+        if (profile?.fullname && !name) setName(profile.fullname);
+        if (profile?.mobileNumber && !mobile) setMobile(String(profile.mobileNumber).replace(/\D/g, "").slice(0, 10));
+
+        if (profile?.college && !college) setCollege(profile.college);
+        if (profile?.year && !year) setYear(profile.year);
+        if (profile?.branch && !section) setSection(profile.branch);
+        if (profile?.rollno && !rollno) setRollNo(profile.rollno);
+
+        if (profile?.usertype) {
+          const u = String(profile.usertype).toLowerCase();
+          if (u.includes("student")) setActiveTab("student");
+        }
+      } catch (e) {
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [API, token]);
 
   // Load PDF pages
   useEffect(() => {
@@ -88,6 +140,7 @@ export default function OrderPrints() {
       setPdfError("");
       return;
     }
+
     const loadPdfPages = async () => {
       try {
         const arrayBuffer = await file.arrayBuffer();
@@ -99,136 +152,109 @@ export default function OrderPrints() {
         setPdfError("Invalid or corrupted PDF");
       }
     };
+
     loadPdfPages();
   }, [file]);
 
   // Price calculation: student discount OR coupon discount
-  useEffect(() => {
-    if (!pages || pages <= 0) {
-      setPrintCost(0);
-      setBindingCost(0);
-      setOriginalPrice(0);
-      setDiscountValue(0);
-      setCouponDiscountAmount(0);
-      setDiscountPrice(0);
-      return;
-    }
+useEffect(() => {
+  setCalcError("");
 
-    let pricePerPage = 0;
+  if (!pages || pages <= 0) {
+    setPrintCost(0);
+    setBindingCost(0);
+    setOriginalPrice(0);
+    setDiscountValue(0);
+    setCouponDiscountAmount(0);
+    setDiscountPrice(0);
+    return;
+  }
 
-    if (color === "b/w" && sides === "2") pricePerPage = 1;
-    else if (color === "b/w" && sides === "1") pricePerPage = 1.5;
-    else if (color === "colour" && sides === "1") pricePerPage = 6;
-    else if (color === "b/w" && sides === "4 per side") pricePerPage = 0.29;
-    else if (color === "b/w" && sides === "2 per side") pricePerPage = 0.5;
-    else pricePerPage = null;
-    if (pricePerPage === null) {
-      alert("This option is unavailable please select a valid option");
-      navigate("/orderprints");
-    }
+  let pricePerPage = 0;
 
-    const printAmount = pricePerPage * pages * copies;
-    setPrintCost(printAmount);
-    let bindingAmount = 0;
-    switch (binding) {
-      case "spiral":
-        bindingAmount = 25 * copies;
-        break;
-      case "stick":
-        bindingAmount = 15 * copies;
-        break;
-      case "soft":
-        bindingAmount = 30 * copies;
-        break;
-      case "book":
-        bindingAmount = 150 * copies;
-        break;
-      default:
-        bindingAmount = 0;
-    }
-    setBindingCost(bindingAmount);
+  if (color === "b/w" && sides === "2") pricePerPage = 1;
+  else if (color === "b/w" && sides === "1") pricePerPage = 1.5;
+  else if (color === "colour" && sides === "1") pricePerPage = 6;
+  else if (color === "b/w" && sides === "4 per side") pricePerPage = 0.29;
+  else if (color === "b/w" && sides === "2 per side") pricePerPage = 0.5;
+  else {
+    setCalcError("This option is unavailable. Please change colour/sides.");
+    setPrintCost(0);
+    setBindingCost(0);
+    setOriginalPrice(0);
+    setDiscountValue(0);
+    setCouponDiscountAmount(0);
+    setDiscountPrice(0);
+    return;
+  }
 
-    const originalTotal = printAmount + bindingAmount;
-    setOriginalPrice(originalTotal);
+  const printAmount = pricePerPage * pages * copies;
+  setPrintCost(printAmount);
 
-    if (couponDiscountPercent === 0) {
-      let studentDiscount = 0;
-      if (activeTab === "student") {
-        studentDiscount = printAmount * 0.15;
-      }
-      setDiscountValue(studentDiscount);
-      setCouponDiscountAmount(0);
-      const finalTotal = Math.ceil(originalTotal - studentDiscount);
-      setDiscountPrice(finalTotal);
-    } else {
-      const couponAmt = Math.ceil(
-        (originalTotal * couponDiscountPercent) / 100,
-      );
-      setDiscountValue(0);
-      setCouponDiscountAmount(couponAmt);
-      const finalTotal = Math.max(0, originalTotal - couponAmt);
-      setDiscountPrice(Math.ceil(finalTotal));
-    }
-  }, [color, sides, binding, pages, copies, activeTab, couponDiscountPercent]);
+  let bindingAmount = 0;
+  switch (binding) {
+    case "spiral":
+      bindingAmount = 25 * copies;
+      break;
+    case "stick":
+      bindingAmount = 15 * copies;
+      break;
+    case "soft":
+      bindingAmount = 30 * copies;
+      break;
+    case "book":
+      bindingAmount = 150 * copies;
+      break;
+    default:
+      bindingAmount = 0;
+  }
+  setBindingCost(bindingAmount);
+
+  const originalTotal = printAmount + bindingAmount;
+  setOriginalPrice(originalTotal);
+  let printsDiscount = 0;
+
+  if (couponDiscountPercent > 0) {
+    printsDiscount = (printAmount * couponDiscountPercent) / 100;
+    setCouponDiscountAmount(Math.ceil(printsDiscount));
+    setDiscountValue(0);
+  } else if (activeTab === "student") {
+    printsDiscount = printAmount * 0.15;
+    setDiscountValue(printsDiscount);
+    setCouponDiscountAmount(0);
+  } else {
+    setDiscountValue(0);
+    setCouponDiscountAmount(0);
+  }
+
+  const finalTotal = Math.max(0, (printAmount - printsDiscount) + bindingAmount);
+  setDiscountPrice(Math.ceil(finalTotal));
+}, [color, sides, binding, pages, copies, activeTab, couponDiscountPercent]);
 
   const handleVerifyCoupon = async () => {
-    const token = localStorage.getItem("token")?.trim();
-
-    if (!token) {
-      alert("Please log in first.");
-      return;
-    }
-
-    if (!couponCode.trim()) {
-      alert("Please enter a coupon code.");
-      return;
-    }
+    if (!token) return alert("Please log in first.");
+    if (!couponCode.trim()) return alert("Please enter a coupon code.");
 
     try {
       setCouponLoading(true);
       setCouponInfo(null);
 
-      console.log("Sending coupon request. Token length:", token.length);
-      console.log("Coupon code:", couponCode);
-
-      const res = await fetch(
-        `${import.meta.env.VITE_API_PATH}/coupon/verify`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ code: couponCode.trim().toUpperCase() }),
+      const res = await fetch(`${API}/coupon/verify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({ code: couponCode.trim().toUpperCase() }),
+      });
 
-      console.log("Response status:", res.status);
-      console.log(
-        "Response headers:",
-        Object.fromEntries(res.headers.entries()),
-      );
+      const data = await res.json().catch(() => ({}));
 
-      const data = await res.json();
-      console.log("Coupon response:", data);
-
-      if (!res.ok) {
-        console.error("Server error:", res.status, data);
+      if (!res.ok || !data?.success) {
         setCouponDiscountPercent(0);
         setCouponDiscountAmount(0);
         setCouponInfo({
           status: data.status || "error",
-          discountPercentage: 0,
-          message: data.error || data.message || `Server error (${res.status})`,
-        });
-        return;
-      }
-
-      if (!data.success) {
-        setCouponDiscountPercent(0);
-        setCouponDiscountAmount(0);
-        setCouponInfo({
-          status: data.status || "invalid",
           discountPercentage: 0,
           message: data.error || data.message || "Invalid coupon",
         });
@@ -237,16 +263,16 @@ export default function OrderPrints() {
 
       const percent = data.data?.discountPercentage || 0;
       setCouponDiscountPercent(percent);
+
       setCouponInfo({
         status: data.status,
         discountPercentage: percent,
         message:
-          data.status === "available"
+          data.status === "available" || data.status === "applied"
             ? `Coupon applied! ${percent}% discount.`
             : "Coupon already used by you.",
       });
     } catch (err) {
-      console.error("Network/Coupon verify error:", err);
       setCouponDiscountPercent(0);
       setCouponDiscountAmount(0);
       setCouponInfo({
@@ -301,6 +327,7 @@ export default function OrderPrints() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return;
 
     if (!file) return alert("Please upload a PDF.");
     if (!pages || pages <= 0) return alert("PDF page count unavailable.");
@@ -316,21 +343,18 @@ export default function OrderPrints() {
       activeTab === "student" &&
       (!college.trim() || !year.trim() || !section.trim() || !rollno.trim())
     ) {
-      return alert(
-        "Fill college, year, section, registration number for students.",
-      );
+      return alert("Fill college, year, branch, registration number for students.");
     }
 
-    if (activeTab === "others" && !address.trim())
+    if (activeTab === "others" && !address.trim()) {
       return alert("Fill delivery address for home delivery.");
+    }
 
     if (!payment) return alert("Select payment method.");
-
     if (payment === "UPI" && !transactionImage) {
       return alert("Please upload UPI transaction screenshot.");
     }
 
-    const token = localStorage.getItem("token");
     if (!token) {
       alert("Please log in first.");
       navigate("/login");
@@ -345,11 +369,8 @@ export default function OrderPrints() {
       formData.append("file", file);
       formData.append("payment", payment);
 
-      if (payment === "UPI") {
-        formData.append("transctionid", transactionImage);
-      } else {
-        formData.append("transctionid", "");
-      }
+      if (payment === "UPI") formData.append("transctionid", transactionImage);
+      else formData.append("transctionid", "");
 
       formData.append("color", color);
       formData.append("sides", sides);
@@ -370,23 +391,17 @@ export default function OrderPrints() {
         formData.append("address", address.trim());
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_PATH}/orders/orderprints`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        },
-      );
+      const response = await fetch(`${API}/orders/orderprints`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         throw new Error(data.message || "Order failed");
       }
 
-      alert("Order placed successfully!");
       navigate("/prints-cart");
     } catch (err) {
       alert(err.message || "Error placing order.");
@@ -396,30 +411,67 @@ export default function OrderPrints() {
     }
   };
 
+  const formDisabled = loading || profileLoading;
+
   return (
     <>
-      {loading ? (
-        <h2>Placing your order....</h2>
-      ) : (
-        <div className="order-main-bg">
-          <div className="order-tabs">
-            <button
-              className={`order-tab${activeTab === "student" ? " active" : ""}`}
-              onClick={() => setActiveTab("student")}
-              type="button"
-            >
-              CLASS ROOM <br /> DELIVERY
-            </button>
-            <button
-              className={`order-tab${activeTab === "others" ? " active" : ""}`}
-              onClick={() => setActiveTab("others")}
-              type="button"
-            >
-              HOME <br /> DELIVERY
-            </button>
+      {/* subtle, non-clumsy overlay while placing order */}
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.35)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 12,
+              padding: "14px 16px",
+              maxWidth: 320,
+              width: "100%",
+              textAlign: "center",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>
+              Placing your order…
+            </div>
+            <div style={{ fontSize: 13, opacity: 0.75 }}>
+              Please don’t refresh or go back.
+            </div>
           </div>
+        </div>
+      )}
 
-          <form className="order-form-wrap" onSubmit={handleSubmit}>
+      <div className="order-main-bg">
+        <div className="order-tabs">
+          <button
+            className={`order-tab${activeTab === "student" ? " active" : ""}`}
+            onClick={() => setActiveTab("student")}
+            type="button"
+            disabled={formDisabled}
+          >
+            CLASS ROOM <br /> DELIVERY
+          </button>
+          <button
+            className={`order-tab${activeTab === "others" ? " active" : ""}`}
+            onClick={() => setActiveTab("others")}
+            type="button"
+            disabled={formDisabled}
+          >
+            HOME <br /> DELIVERY
+          </button>
+        </div>
+
+        <form className="order-form-wrap" onSubmit={handleSubmit}>
+          <fieldset disabled={formDisabled} style={{ border: "none", padding: 0 }}>
             <h2>
               {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Printout
               Order
@@ -441,13 +493,12 @@ export default function OrderPrints() {
               value={mobile}
               maxLength={10}
               onChange={(e) => {
-                const digitsOnly = e.target.value
-                  .replace(/\D/g, "")
-                  .slice(0, 10);
+                const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
                 setMobile(digitsOnly);
               }}
               required
             />
+
             <p>
               To Custom orders please contact Hemanth:{" "}
               <a href="tel:+919182415750">+91 9182415750</a>
@@ -535,11 +586,9 @@ export default function OrderPrints() {
             </div>
 
             {pdfError && <div className="error-text">{pdfError}</div>}
-            {pages > 0 && (
-              <div className="pdf-pages-info">Pages detected: {pages}</div>
-            )}
+            {pages > 0 && <div className="pdf-pages-info">Pages detected: {pages}</div>}
 
-            <span>Worried about your large file size?</span>
+            <span>Worried about your large file size?</span><br />
             <a
               href="https://www.ilovepdf.com/compress_pdf"
               target="_blank"
@@ -559,15 +608,12 @@ export default function OrderPrints() {
             >
               Compress file size here
             </a>
+
             <br />
 
             <div className="input-row">
               <span>Colour options</span>
-              <select
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                required
-              >
+              <select value={color} onChange={(e) => setColor(e.target.value)} required>
                 {COLOR_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -576,11 +622,7 @@ export default function OrderPrints() {
               </select>
 
               <span>Sides</span>
-              <select
-                value={sides}
-                onChange={(e) => setSides(e.target.value)}
-                required
-              >
+              <select value={sides} onChange={(e) => setSides(e.target.value)} required>
                 {SIDES_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -591,11 +633,7 @@ export default function OrderPrints() {
 
             <div className="input-row">
               <span>Binding Options</span>
-              <select
-                value={binding}
-                onChange={(e) => setBinding(e.target.value)}
-                required
-              >
+              <select value={binding} onChange={(e) => setBinding(e.target.value)} required>
                 {BINDING_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -626,7 +664,7 @@ export default function OrderPrints() {
               <input
                 type="text"
                 className="input"
-                placeholder="Enter coupon code "
+                placeholder="Enter coupon code"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
               />
@@ -635,7 +673,7 @@ export default function OrderPrints() {
                 className="order-btn"
                 style={{ maxWidth: 130, minHeight: 40, fontSize: "0.9rem" }}
                 onClick={handleVerifyCoupon}
-                disabled={couponLoading}
+                disabled={couponLoading || formDisabled}
               >
                 {couponLoading ? "Checking..." : "Apply Coupon"}
               </button>
@@ -647,7 +685,7 @@ export default function OrderPrints() {
                   marginTop: 4,
                   fontSize: "0.9rem",
                   color:
-                    couponInfo.status === "available"
+                    couponInfo.status === "available" || couponInfo.status === "applied"
                       ? "#04793f"
                       : couponInfo.status === "used"
                         ? "#c27b00"
@@ -709,11 +747,7 @@ export default function OrderPrints() {
                 {transactionImage && (
                   <div style={{ marginTop: 8 }}>
                     Selected file: {transactionImage.name}{" "}
-                    <button
-                      type="button"
-                      onClick={() => setTransactionImage(null)}
-                      style={{ marginLeft: 8 }}
-                    >
+                    <button type="button" onClick={() => setTransactionImage(null)} style={{ marginLeft: 8 }}>
                       Remove
                     </button>
                   </div>
@@ -730,19 +764,13 @@ export default function OrderPrints() {
                   </span>
                 </p>
 
-                {/* Student discount only when no coupon is applied */}
                 {couponDiscountPercent === 0 && discountValue > 0 && (
-                  <p>
-                    15% Student Discount on Prints: -₹
-                    {discountValue.toFixed(2)}
-                  </p>
+                  <p>15% Student Discount on Prints: -₹{discountValue.toFixed(2)}</p>
                 )}
 
-                {/* Coupon discount only when coupon is applied */}
                 {couponDiscountPercent > 0 && couponDiscountAmount > 0 && (
                   <p>
-                    Coupon Discount ({couponDiscountPercent}% on total): -₹
-                    {couponDiscountAmount}
+                    Coupon Discount ({couponDiscountPercent}% on total): -₹{couponDiscountAmount}
                   </p>
                 )}
 
@@ -750,21 +778,18 @@ export default function OrderPrints() {
               </div>
             )}
 
-            <button
-              className="order-btn"
-              type="submit"
-              disabled={loading || pages <= 0}
-            >
+            <button className="order-btn" type="submit" disabled={loading || pages <= 0}>
               {loading ? "Placing Order..." : "Place Order"}
             </button>
-          </form>
-          <div className="back-btn-wrapper">
-            <a href="https://mybookhub.store/" className="back-link">
-              <button className="back-btn">Back to MyBookHub</button>
-            </a>
-          </div>
+          </fieldset>
+        </form>
+
+        <div className="back-btn-wrapper">
+          <a href="https://mybookhub.store/" className="back-link">
+            <button className="back-btn">Back to MyBookHub</button>
+          </a>
         </div>
-      )}
+      </div>
     </>
   );
 }
