@@ -1,0 +1,179 @@
+.pk-header {
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid #e8e8e8;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.pk-header-content {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.pk-logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pk-logo img {
+  height: 54px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.pk-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.pk-user-profile,
+.pk-help-section,
+.pk-cart-section {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.pk-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pk-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pk-help-icon,
+.pk-cart-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
+.pk-login-text,
+.pk-help-text,
+.pk-cart-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .pk-header-content {
+    padding: 10px 16px;
+    gap: 12px;
+  }
+
+  .pk-logo img {
+    height: 46px;
+  }
+
+  .pk-header-actions {
+    gap: 16px;
+  }
+
+  .pk-user-avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .pk-help-icon,
+  .pk-cart-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .pk-login-text,
+  .pk-help-text,
+  .pk-cart-text {
+    font-size: 12px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .pk-header-content {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .pk-logo img {
+    height: 40px;
+    max-width: 120px;
+  }
+
+  .pk-header-actions {
+    gap: 10px;
+  }
+
+  .pk-user-profile,
+  .pk-help-section,
+  .pk-cart-section {
+    gap: 4px;
+  }
+
+  .pk-user-avatar {
+    width: 22px;
+    height: 22px;
+  }
+
+  .pk-help-icon,
+  .pk-cart-icon {
+    width: 15px;
+    height: 15px;
+  }
+
+  .pk-login-text,
+  .pk-help-text,
+  .pk-cart-text {
+    font-size: 10px;
+  }
+}
+
+/* Very small mobile */
+@media (max-width: 360px) {
+  .pk-header-content {
+    padding: 8px 10px;
+  }
+
+  .pk-header-actions {
+    gap: 8px;
+  }
+
+  .pk-login-text,
+  .pk-help-text,
+  .pk-cart-text {
+    font-size: 9px;
+  }
+
+  .pk-logo img {
+    height: 36px;
+    max-width: 105px;
+  }
+}

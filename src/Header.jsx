@@ -2,12 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { api_path } from "../data";
-import "./styles/styles.css";
+import "./styles/header.css";
 
 function Header() {
   const navigate = useNavigate();
   const [userName, setUserName] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const goToLogin = () => navigate("/login");
   const goToCart = () => navigate("/prints-cart");
@@ -16,12 +15,10 @@ function Header() {
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      setLoading(true);
       const token = localStorage.getItem("token");
 
       if (!token) {
         setUserName(null);
-        setLoading(false);
         return;
       }
 
@@ -30,20 +27,15 @@ function Header() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.data && response.data.user) {
+        if (response.data?.user) {
           setUserName(
             response.data.user.fullname || response.data.user.name || null,
           );
         } else {
           setUserName(null);
-          localStorage.removeItem("token");
         }
       } catch (error) {
         setUserName(null);
-        localStorage.removeItem("token");
-        console.error("Failed to fetch user profile:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -51,28 +43,38 @@ function Header() {
   }, []);
 
   return (
-    <header className="header">
-      <div className="header-content">
-        <div className="logo" onClick={goToHome}>
+    <header className="pk-header">
+      <div className="pk-header-content">
+        <div className="pk-logo" onClick={goToHome}>
           <img src="/images/middle.jpeg" alt="PrintKart" />
         </div>
 
-        <div className="header-actions">
-          <div className="user-profile" onClick={goToLogin}>
-            <div className="user-avatar">
+        <div className="pk-header-actions">
+          <div className="pk-user-profile" onClick={goToLogin}>
+            <div className="pk-user-avatar">
               <img src="/images/user-avatar.png" alt="User" />
             </div>
-            <span className="login-text">{userName ? userName : "Login"}</span>
+            <span className="pk-login-text">
+              {userName ? userName : "Login"}
+            </span>
           </div>
 
-          <div className="help-section" onClick={goToHelp}>
-            <img src="/images/help-icon.png" alt="Help" className="help-icon" />
-            <span className="help-text">Help</span>
+          <div className="pk-help-section" onClick={goToHelp}>
+            <img
+              src="/images/help-icon.png"
+              alt="Help"
+              className="pk-help-icon"
+            />
+            <span className="pk-help-text">Help</span>
           </div>
 
-          <div className="cart-section" onClick={goToCart}>
-            <img src="/images/cart-icon.png" alt="Cart" className="cart-icon" />
-            <span className="cart-text">My Bag</span>
+          <div className="pk-cart-section" onClick={goToCart}>
+            <img
+              src="/images/cart-icon.png"
+              alt="Cart"
+              className="pk-cart-icon"
+            />
+            <span className="pk-cart-text">My Bag</span>
           </div>
         </div>
       </div>

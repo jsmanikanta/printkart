@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import * as pdfjsLib from "pdfjs-dist/build/pdf";
 import "pdfjs-dist/build/pdf.worker.mjs";
 import "./styles/orderprints.css";
-import qrImg from "/images/qr.jpg";
 
 const colleges = [
   "Anil Neerukonda Institute of Technology & Sciences (ANITS), Visakhapatnam",
@@ -17,10 +16,10 @@ const colleges = [
 
 const COLOR_OPTIONS = [
   { value: "b/w", label: "Black & White" },
-  { value: "colour", label: "Colour" },
+  { value: "colour", label: "Colour Xerox" },
 ];
 
-const SIDES_OPTIONS = [
+const ALL_SIDES_OPTIONS = [
   { value: "1", label: "Single Side" },
   { value: "2", label: "Double Side" },
   { value: "2 per side", label: "2 per side (Front & Back)" },
@@ -36,95 +35,134 @@ const BINDING_OPTIONS = [
 ];
 
 const PAYMENT_OPTIONS = [
-  { value: "payondelivery", label: "Pay on Delivery" },
-  { value: "UPI", label: "UPI" },
+  { value: "Razorpay", label: "Online Payment" },
+  { value: "Pay on Delivery", label: "Pay on Delivery" },
 ];
+
+function loadRazorpayScript() {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
 export default function OrderPrints() {
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_PATH;
+  const token = useMemo(() => localStorage.getItem("token")?.trim() || "", []);
 
   const [activeTab, setActiveTab] = useState("student");
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const [file, setFile] = useState(null);
   const [pages, setPages] = useState(0);
   const [pdfError, setPdfError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [rollno, setRollno] = useState("");
+  const [college, setCollege] = useState("");
+  const [year, setYear] = useState("");
+  const [section, setSection] = useState("");
+  const [address, setAddress] = useState("");
+  const [description, setDescription] = useState("");
 
   const [color, setColor] = useState("b/w");
   const [sides, setSides] = useState("1");
   const [binding, setBinding] = useState("none");
   const [copies, setCopies] = useState(1);
-  const [address, setAddress] = useState("");
-  const [description, setDescription] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("Razorpay");
 
-  const [transactionImage, setTransactionImage] = useState(null);
-  const [payment, setPayment] = useState("payondelivery");
-  const [calcError, setCalcError] = useState("");
-  const [submitError, setSubmitError] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponInfo, setCouponInfo] = useState(null);
+  const [couponDiscountValue, setCouponDiscountValue] = useState(0);
 
-  const [loading, setLoading] = useState(false);
-  const [profileLoading, setProfileLoading] = useState(true);
-
-  // form fields
-  const [name, setName] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [rollno, setRollNo] = useState("");
-  const [college, setCollege] = useState("");
-  const [year, setYear] = useState("");
-  const [section, setSection] = useState("");
-
-  // pricing
+  const [printCost, setPrintCost] = useState(0);
+  const [bindingCost, setBindingCost] = useState(0);
   const [originalPrice, setOriginalPrice] = useState(0);
   const [discountPrice, setDiscountPrice] = useState(0);
-  const [printCost, setPrintCost] = useState(0);
-  const [discountValue, setDiscountValue] = useState(0);
-  const [bindingCost, setBindingCost] = useState(0);
-
-  // coupon
-  const [couponCode, setCouponCode] = useState("");
-  const [couponInfo, setCouponInfo] = useState(null);
-  const [couponLoading, setCouponLoading] = useState(false);
-  const [couponDiscountPercent, setCouponDiscountPercent] = useState(0);
-  const [couponDiscountAmount, setCouponDiscountAmount] = useState(0);
+  const [studentDiscount, setStudentDiscount] = useState(0);
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-  const token = useMemo(() => localStorage.getItem("token")?.trim(), []);
+  const availableSidesOptions = useMemo(() => {
+    if (color === "colour") {
+      return [{ value: "1", label: "Single Side" }];
+    }
+    return ALL_SIDES_OPTIONS;
+  }, [color]);
 
   useEffect(() => {
     if (!token) navigate("/login");
-  }, [navigate, token]);
+  }, [token, navigate]);
+
+  useEffect(() => {
+    if (color === "colour" && sides !== "1") {
+      setSides("1");
+    }
+  }, [color, sides]);
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (!token) return;
 
-      setProfileLoading(true);
       try {
+        setProfileLoading(true);
+
         const res = await fetch(`${API}/user/profile`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
-        if (!res.ok) {
-          setProfileLoading(false);
-          return;
-        }
+        if (!res.ok) return;
 
         const profile = await res.json();
-        if (profile?.fullname && !name) setName(profile.fullname);
-        if (profile?.mobileNumber && !mobile) setMobile(String(profile.mobileNumber).replace(/\D/g, "").slice(0, 10));
 
-        if (profile?.college && !college) setCollege(profile.college);
-        if (profile?.year && !year) setYear(profile.year);
-        if (profile?.branch && !section) setSection(profile.branch);
-        if (profile?.rollno && !rollno) setRollNo(profile.rollno);
+        const fullName = profile?.fullname || profile?.user?.fullname || "";
+        const mobileNumber =
+          profile?.mobileNumber || profile?.user?.mobileNumber || "";
+        const userCollege = profile?.college || profile?.user?.college || "";
+        const userYear = profile?.year || profile?.user?.year || "";
+        const userSection =
+          profile?.section ||
+          profile?.branch ||
+          profile?.user?.section ||
+          profile?.user?.branch ||
+          "";
+        const userRollno = profile?.rollno || profile?.user?.rollno || "";
+        const userType = (
+          profile?.usertype ||
+          profile?.user?.usertype ||
+          ""
+        ).toLowerCase();
 
-        if (profile?.usertype) {
-          const u = String(profile.usertype).toLowerCase();
-          if (u.includes("student")) setActiveTab("student");
+        if (fullName) setName(fullName);
+        if (mobileNumber) {
+          setMobile(String(mobileNumber).replace(/\D/g, "").slice(0, 10));
         }
-      } catch (e) {
+        if (userCollege) setCollege(userCollege);
+        if (userYear) setYear(userYear);
+        if (userSection) setSection(userSection);
+        if (userRollno) setRollno(userRollno);
+
+        if (userType.includes("student")) {
+          setActiveTab("student");
+        }
+      } catch (error) {
+        console.error("Profile fetch error:", error);
       } finally {
         setProfileLoading(false);
       }
@@ -133,7 +171,6 @@ export default function OrderPrints() {
     fetchProfile();
   }, [API, token]);
 
-  // Load PDF pages
   useEffect(() => {
     if (!file) {
       setPages(0);
@@ -141,99 +178,116 @@ export default function OrderPrints() {
       return;
     }
 
-    const loadPdfPages = async () => {
+    const readPdf = async () => {
       try {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
         setPages(pdf.numPages);
         setPdfError("");
-      } catch (e) {
+      } catch (error) {
+        console.error("PDF read error:", error);
         setPages(0);
-        setPdfError("Invalid or corrupted PDF");
+        setPdfError("Invalid or corrupted PDF file");
       }
     };
 
-    loadPdfPages();
+    readPdf();
   }, [file]);
 
-  // Price calculation: student discount OR coupon discount
-useEffect(() => {
-  setCalcError("");
+  useEffect(() => {
+    if (!pages || pages <= 0) {
+      setPrintCost(0);
+      setBindingCost(0);
+      setOriginalPrice(0);
+      setDiscountPrice(0);
+      setStudentDiscount(0);
+      return;
+    }
 
-  if (!pages || pages <= 0) {
-    setPrintCost(0);
-    setBindingCost(0);
-    setOriginalPrice(0);
-    setDiscountValue(0);
-    setCouponDiscountAmount(0);
-    setDiscountPrice(0);
-    return;
-  }
+    let pricePerPage = 0;
 
-  let pricePerPage = 0;
+    if (color === "b/w" && sides === "1") pricePerPage = 1.5;
+    else if (color === "b/w" && sides === "2") pricePerPage = 1;
+    else if (color === "b/w" && sides === "2 per side") pricePerPage = 0.5;
+    else if (color === "b/w" && sides === "4 per side") pricePerPage = 0.29;
+    else if (color === "colour" && sides === "1") pricePerPage = 6;
 
-  if (color === "b/w" && sides === "2") pricePerPage = 1;
-  else if (color === "b/w" && sides === "1") pricePerPage = 1.5;
-  else if (color === "colour" && sides === "1") pricePerPage = 6;
-  else if (color === "b/w" && sides === "4 per side") pricePerPage = 0.29;
-  else if (color === "b/w" && sides === "2 per side") pricePerPage = 0.5;
-  else {
-    setCalcError("This option is unavailable. Please change colour/sides.");
-    setPrintCost(0);
-    setBindingCost(0);
-    setOriginalPrice(0);
-    setDiscountValue(0);
-    setCouponDiscountAmount(0);
-    setDiscountPrice(0);
-    return;
-  }
+    const safeCopies = Number(copies) > 0 ? Number(copies) : 1;
+    const currentPrintCost = pricePerPage * pages * safeCopies;
 
-  const printAmount = pricePerPage * pages * copies;
-  setPrintCost(printAmount);
+    let currentBindingCost = 0;
+    switch (binding) {
+      case "spiral":
+        currentBindingCost = 25 * safeCopies;
+        break;
+      case "stick":
+        currentBindingCost = 15 * safeCopies;
+        break;
+      case "soft":
+        currentBindingCost = 30 * safeCopies;
+        break;
+      case "book":
+        currentBindingCost = 150 * safeCopies;
+        break;
+      default:
+        currentBindingCost = 0;
+    }
 
-  let bindingAmount = 0;
-  switch (binding) {
-    case "spiral":
-      bindingAmount = 25 * copies;
-      break;
-    case "stick":
-      bindingAmount = 15 * copies;
-      break;
-    case "soft":
-      bindingAmount = 30 * copies;
-      break;
-    case "book":
-      bindingAmount = 150 * copies;
-      break;
-    default:
-      bindingAmount = 0;
-  }
-  setBindingCost(bindingAmount);
+    const baseTotal = currentPrintCost + currentBindingCost;
+    const autoStudentDiscount =
+      activeTab === "student" && couponDiscountValue <= 0
+        ? currentPrintCost * 0.15
+        : 0;
 
-  const originalTotal = printAmount + bindingAmount;
-  setOriginalPrice(originalTotal);
-  let printsDiscount = 0;
+    const finalTotal = Math.max(
+      0,
+      baseTotal - autoStudentDiscount - couponDiscountValue,
+    );
 
-  if (couponDiscountPercent > 0) {
-    printsDiscount = (printAmount * couponDiscountPercent) / 100;
-    setCouponDiscountAmount(Math.ceil(printsDiscount));
-    setDiscountValue(0);
-  } else if (activeTab === "student") {
-    printsDiscount = printAmount * 0.15;
-    setDiscountValue(printsDiscount);
-    setCouponDiscountAmount(0);
-  } else {
-    setDiscountValue(0);
-    setCouponDiscountAmount(0);
-  }
+    setPrintCost(Math.ceil(currentPrintCost));
+    setBindingCost(Math.ceil(currentBindingCost));
+    setOriginalPrice(Math.ceil(baseTotal));
+    setStudentDiscount(Math.ceil(autoStudentDiscount));
+    setDiscountPrice(Math.ceil(finalTotal));
+  }, [color, sides, binding, copies, pages, activeTab, couponDiscountValue]);
 
-  const finalTotal = Math.max(0, (printAmount - printsDiscount) + bindingAmount);
-  setDiscountPrice(Math.ceil(finalTotal));
-}, [color, sides, binding, pages, copies, activeTab, couponDiscountPercent]);
+  const handleFileChange = (e) => {
+    const uploaded = e.target.files?.[0];
+    setSubmitError("");
 
-  const handleVerifyCoupon = async () => {
-    if (!token) return alert("Please log in first.");
-    if (!couponCode.trim()) return alert("Please enter a coupon code.");
+    if (!uploaded) {
+      setFile(null);
+      setPages(0);
+      setPdfError("");
+      return;
+    }
+
+    if (uploaded.type !== "application/pdf") {
+      setPdfError("Only PDF files are allowed");
+      e.target.value = "";
+      return;
+    }
+
+    if (uploaded.size > MAX_FILE_SIZE) {
+      setPdfError("PDF file size must be less than 10MB");
+      e.target.value = "";
+      return;
+    }
+
+    setFile(uploaded);
+    setPdfError("");
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    if (!couponCode.trim()) {
+      setCouponInfo({ type: "error", message: "Please enter coupon code" });
+      return;
+    }
 
     try {
       setCouponLoading(true);
@@ -245,167 +299,265 @@ useEffect(() => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ code: couponCode.trim().toUpperCase() }),
+        body: JSON.stringify({
+          code: couponCode.trim().toUpperCase(),
+        }),
       });
 
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok || !data?.success) {
-        setCouponDiscountPercent(0);
-        setCouponDiscountAmount(0);
+        setCouponDiscountValue(0);
         setCouponInfo({
-          status: data.status || "error",
-          discountPercentage: 0,
-          message: data.error || data.message || "Invalid coupon",
+          type: "error",
+          message: data?.error || data?.message || "Invalid coupon",
         });
         return;
       }
 
-      const percent = data.data?.discountPercentage || 0;
-      setCouponDiscountPercent(percent);
+      const rawDiscount =
+        Number(data?.data?.discount) ||
+        Number(data?.data?.discountPercentage) ||
+        Number(data?.discount) ||
+        0;
 
+      setCouponDiscountValue(rawDiscount);
       setCouponInfo({
-        status: data.status,
-        discountPercentage: percent,
-        message:
-          data.status === "available" || data.status === "applied"
-            ? `Coupon applied! ${percent}% discount.`
-            : "Coupon already used by you.",
+        type: "success",
+        message: `Coupon applied successfully. Discount: ₹${rawDiscount}`,
       });
-    } catch (err) {
-      setCouponDiscountPercent(0);
-      setCouponDiscountAmount(0);
+    } catch (error) {
+      console.error("Coupon error:", error);
+      setCouponDiscountValue(0);
       setCouponInfo({
-        status: "error",
-        discountPercentage: 0,
-        message: "Network error. Please try again.",
+        type: "error",
+        message: "Failed to apply coupon",
       });
     } finally {
       setCouponLoading(false);
     }
   };
 
-  const handleFileChange = (e) => {
-    const uploaded = e.target.files[0];
-    if (!uploaded) {
-      setFile(null);
-      setPages(0);
-      setPdfError("");
-      return;
+  const validateForm = () => {
+    if (!file) return "Please upload a PDF file";
+    if (!pages || pages <= 0) return "PDF page count not detected";
+    if (!name.trim()) return "Full name is required";
+
+    const mobileDigits = mobile.replace(/\D/g, "").slice(0, 10);
+    if (!/^\d{10}$/.test(mobileDigits)) {
+      return "Please enter a valid 10-digit mobile number";
     }
-    if (uploaded.type !== "application/pdf") {
-      alert("Only PDF files are allowed.");
-      e.target.value = null;
-      return;
+
+    if (activeTab === "student") {
+      if (!college.trim()) return "Please select college";
+      if (!year.trim()) return "Please enter year";
+      if (!section.trim()) return "Please enter branch / section";
+      if (!rollno.trim()) return "Please enter registration number";
     }
-    if (uploaded.size > MAX_FILE_SIZE) {
-      alert("PDF file size must be less than 10MB.");
-      e.target.value = null;
-      return;
+
+    if (activeTab === "others" && !address.trim()) {
+      return "Please enter delivery address";
     }
-    setFile(uploaded);
+
+    return "";
   };
 
-  const handleTransactionImageChange = (e) => {
-    const uploaded = e.target.files[0];
-    if (!uploaded) {
-      setTransactionImage(null);
-      return;
+  const createPrintOrder = async () => {
+    const formData = new FormData();
+
+    formData.append("file", file);
+    formData.append("color", color);
+    formData.append("sides", sides);
+    formData.append("binding", binding);
+    formData.append("copies", String(Number(copies) || 1));
+    formData.append("description", description.trim());
+    formData.append("originalprice", String(originalPrice));
+    formData.append("discountprice", String(discountPrice));
+    formData.append("paymentMethod", paymentMethod);
+
+    if (activeTab === "student") {
+      formData.append("college", college.trim());
+      formData.append("year", year.trim());
+      formData.append("section", section.trim());
+      formData.append("rollno", rollno.trim());
+    } else {
+      formData.append("address", address.trim());
     }
-    if (!uploaded.type.startsWith("image/")) {
-      alert("Transaction screenshot must be an image.");
-      e.target.value = null;
-      return;
+
+    const res = await fetch(`${API}/orders/orderprints`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data?.success) {
+      throw new Error(data?.message || data?.error || "Failed to create order");
     }
-    if (uploaded.size > MAX_FILE_SIZE) {
-      alert("Transaction screenshot must be less than 10MB.");
-      e.target.value = null;
-      return;
+
+    return data.order;
+  };
+
+  const openRazorpay = async (order) => {
+    const scriptLoaded = await loadRazorpayScript();
+
+    if (!scriptLoaded) {
+      throw new Error("Razorpay SDK failed to load");
     }
-    setTransactionImage(uploaded);
+
+    const createOrderRes = await fetch(`${API}/payments/create-order`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        printOrderId: order._id,
+      }),
+    });
+
+    const paymentData = await createOrderRes.json().catch(() => ({}));
+
+    if (!createOrderRes.ok || !paymentData?.success) {
+      throw new Error(
+        paymentData?.error ||
+          paymentData?.message ||
+          "Failed to create Razorpay order",
+      );
+    }
+
+    if (!paymentData?.key) {
+      throw new Error("Razorpay key missing from backend response");
+    }
+
+    if (!paymentData?.razorpayOrderId) {
+      throw new Error("Razorpay order id missing from backend response");
+    }
+
+    return new Promise((resolve, reject) => {
+      const razorpay = new window.Razorpay({
+        key: paymentData.key,
+        amount: paymentData.amount,
+        currency: paymentData.currency || "INR",
+        name: "PrintKart",
+        description: "Print order payment",
+        order_id: paymentData.razorpayOrderId,
+        handler: async (response) => {
+          try {
+            const verifyRes = await fetch(`${API}/payments/verify-payment`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                printOrderId: order._id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyData = await verifyRes.json().catch(() => ({}));
+
+            if (!verifyRes.ok || !verifyData?.success) {
+              reject(
+                new Error(
+                  verifyData?.error ||
+                    verifyData?.message ||
+                    "Payment verification failed",
+                ),
+              );
+              return;
+            }
+
+            resolve(verifyData);
+          } catch (error) {
+            reject(error);
+          }
+        },
+        modal: {
+          ondismiss: async () => {
+            try {
+              await fetch(`${API}/payments/payment-failed`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  printOrderId: order._id,
+                  razorpayOrderId: paymentData.razorpayOrderId,
+                }),
+              });
+            } catch (error) {
+              console.error("Payment failed update error:", error);
+            }
+
+            reject(new Error("Payment cancelled"));
+          },
+        },
+        prefill: {
+          name: name.trim(),
+          contact: mobile.replace(/\D/g, "").slice(0, 10),
+        },
+        theme: {
+          color: "#d4a017",
+        },
+      });
+
+      razorpay.on("payment.failed", async (response) => {
+        console.error("Razorpay payment.failed:", response);
+
+        try {
+          await fetch(`${API}/payments/payment-failed`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              printOrderId: order._id,
+              razorpayOrderId: paymentData.razorpayOrderId,
+            }),
+          });
+        } catch (error) {
+          console.error("payment.failed callback error:", error);
+        }
+      });
+
+      razorpay.open();
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
 
-    if (!file) return alert("Please upload a PDF.");
-    if (!pages || pages <= 0) return alert("PDF page count unavailable.");
-    if (!name.trim() || !mobile.trim()) return alert("Fill personal details.");
+    setSubmitError("");
 
-    const mobileDigits = mobile.replace(/\D/g, "").slice(0, 10);
-    const mobileNumberPattern = /^\d{10}$/;
-    if (!mobileNumberPattern.test(mobileDigits)) {
-      return alert("Please enter a valid 10-digit mobile number.");
-    }
-
-    if (
-      activeTab === "student" &&
-      (!college.trim() || !year.trim() || !section.trim() || !rollno.trim())
-    ) {
-      return alert("Fill college, year, branch, registration number for students.");
-    }
-
-    if (activeTab === "others" && !address.trim()) {
-      return alert("Fill delivery address for home delivery.");
-    }
-
-    if (!payment) return alert("Select payment method.");
-    if (payment === "UPI" && !transactionImage) {
-      return alert("Please upload UPI transaction screenshot.");
-    }
-
-    if (!token) {
-      alert("Please log in first.");
-      navigate("/login");
+    const error = validateForm();
+    if (error) {
+      setSubmitError(error);
       return;
     }
 
-    setLoading(true);
-
     try {
-      const formData = new FormData();
+      setLoading(true);
 
-      formData.append("file", file);
-      formData.append("payment", payment);
+      const order = await createPrintOrder();
 
-      if (payment === "UPI") formData.append("transctionid", transactionImage);
-      else formData.append("transctionid", "");
-
-      formData.append("color", color);
-      formData.append("sides", sides);
-      formData.append("binding", binding);
-      formData.append("copies", String(copies));
-      formData.append("description", description.trim());
-      formData.append("name", name.trim());
-      formData.append("mobile", mobileDigits);
-      formData.append("originalprice", Math.ceil(originalPrice));
-      formData.append("discountprice", discountPrice);
-
-      if (activeTab === "student") {
-        formData.append("college", college.trim());
-        formData.append("year", year.trim());
-        formData.append("section", section.trim());
-        formData.append("rollno", rollno.trim());
-      } else {
-        formData.append("address", address.trim());
-      }
-
-      const response = await fetch(`${API}/orders/orderprints`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.message || "Order failed");
+      if (paymentMethod === "Razorpay") {
+        await openRazorpay(order);
       }
 
       navigate("/prints-cart");
-    } catch (err) {
-      alert(err.message || "Error placing order.");
-      console.error("Order submit error:", err);
+    } catch (error) {
+      console.error("Order submit error:", error);
+      setSubmitError(error?.message || "Failed to place order");
     } finally {
       setLoading(false);
     }
@@ -415,7 +567,6 @@ useEffect(() => {
 
   return (
     <>
-      {/* subtle, non-clumsy overlay while placing order */}
       {loading && (
         <div
           style={{
@@ -432,19 +583,19 @@ useEffect(() => {
           <div
             style={{
               background: "#fff",
-              borderRadius: 12,
-              padding: "14px 16px",
+              borderRadius: 14,
+              padding: "16px 18px",
               maxWidth: 320,
               width: "100%",
               textAlign: "center",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+              boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
             }}
           >
             <div style={{ fontWeight: 700, marginBottom: 6 }}>
-              Placing your order…
+              Processing your order...
             </div>
             <div style={{ fontSize: 13, opacity: 0.75 }}>
-              Please don’t refresh or go back.
+              Please wait and do not refresh.
             </div>
           </div>
         </div>
@@ -453,17 +604,18 @@ useEffect(() => {
       <div className="order-main-bg">
         <div className="order-tabs">
           <button
+            type="button"
             className={`order-tab${activeTab === "student" ? " active" : ""}`}
             onClick={() => setActiveTab("student")}
-            type="button"
             disabled={formDisabled}
           >
             CLASS ROOM <br /> DELIVERY
           </button>
+
           <button
+            type="button"
             className={`order-tab${activeTab === "others" ? " active" : ""}`}
             onClick={() => setActiveTab("others")}
-            type="button"
             disabled={formDisabled}
           >
             HOME <br /> DELIVERY
@@ -471,12 +623,14 @@ useEffect(() => {
         </div>
 
         <form className="order-form-wrap" onSubmit={handleSubmit}>
-          <fieldset disabled={formDisabled} style={{ border: "none", padding: 0 }}>
+          <fieldset
+            disabled={formDisabled}
+            style={{ border: "none", padding: 0 }}
+          >
             <h2>
-              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Printout
-              Order
+              {activeTab === "student" ? "Student" : "Home"} Printout Order
             </h2>
-
+            <span>Name:</span>
             <input
               type="text"
               className="input"
@@ -486,26 +640,27 @@ useEffect(() => {
               required
             />
 
+            <span>Mobile Number:</span>
             <input
               type="tel"
               className="input"
               placeholder="Mobile Number"
               value={mobile}
               maxLength={10}
-              onChange={(e) => {
-                const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
-                setMobile(digitsOnly);
-              }}
+              onChange={(e) =>
+                setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))
+              }
               required
             />
 
             <p>
-              To Custom orders please contact Hemanth:{" "}
+              To custom orders please contact Hemanth:{" "}
               <a href="tel:+919182415750">+91 9182415750</a>
             </p>
 
-            {activeTab === "student" && (
+            {activeTab === "student" ? (
               <>
+                <span>Select Your College:</span>
                 <select
                   value={college}
                   onChange={(e) => setCollege(e.target.value)}
@@ -518,7 +673,7 @@ useEffect(() => {
                     </option>
                   ))}
                 </select>
-
+                <span>Year of Study</span>
                 <input
                   type="text"
                   className="input"
@@ -527,28 +682,26 @@ useEffect(() => {
                   onChange={(e) => setYear(e.target.value)}
                   required
                 />
-
+                Branch:
                 <input
                   type="text"
                   className="input"
-                  placeholder="Branch (e.g., CSE, ECE)"
+                  placeholder="Branch / Section"
                   value={section}
                   onChange={(e) => setSection(e.target.value)}
                   required
                 />
-
+                <span>Registration Number:</span>
                 <input
                   type="text"
                   className="input"
                   placeholder="Registration Number"
                   value={rollno}
-                  onChange={(e) => setRollNo(e.target.value)}
+                  onChange={(e) => setRollno(e.target.value)}
                   required
                 />
               </>
-            )}
-
-            {activeTab === "others" && (
+            ) : (
               <textarea
                 className="input"
                 placeholder="Delivery Address"
@@ -568,27 +721,20 @@ useEffect(() => {
                 required
               />
 
-              <label
-                htmlFor="pdfFile"
-                className="custom-file-label"
-                style={{
-                  border: "1px solid #ccc",
-                  padding: "6px 12px",
-                  display: "inline-block",
-                  cursor: "pointer",
-                  background: "#f8f8f8",
-                }}
-              >
-                {file ? file.name : "Choose File"}
+              <label htmlFor="pdfFile" className="custom-file-label">
+                {file ? file.name : "Choose PDF File"}
               </label>
 
               <p style={{ marginLeft: 12 }}>Max Size: 10MB</p>
             </div>
 
             {pdfError && <div className="error-text">{pdfError}</div>}
-            {pages > 0 && <div className="pdf-pages-info">Pages detected: {pages}</div>}
+            {pages > 0 && (
+              <div className="pdf-pages-info">Pages detected: {pages}</div>
+            )}
 
-            <span>Worried about your large file size?</span><br />
+            <span>Worried about large file size?</span>
+            <br />
             <a
               href="https://www.ilovepdf.com/compress_pdf"
               target="_blank"
@@ -606,14 +752,18 @@ useEffect(() => {
                 textDecoration: "none",
               }}
             >
-              Compress file size here
+              Compress file here
             </a>
 
             <br />
 
             <div className="input-row">
               <span>Colour options</span>
-              <select value={color} onChange={(e) => setColor(e.target.value)} required>
+              <select
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                required
+              >
                 {COLOR_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -622,8 +772,12 @@ useEffect(() => {
               </select>
 
               <span>Sides</span>
-              <select value={sides} onChange={(e) => setSides(e.target.value)} required>
-                {SIDES_OPTIONS.map((opt) => (
+              <select
+                value={sides}
+                onChange={(e) => setSides(e.target.value)}
+                required
+              >
+                {availableSidesOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
@@ -633,7 +787,11 @@ useEffect(() => {
 
             <div className="input-row">
               <span>Binding Options</span>
-              <select value={binding} onChange={(e) => setBinding(e.target.value)} required>
+              <select
+                value={binding}
+                onChange={(e) => setBinding(e.target.value)}
+                required
+              >
                 {BINDING_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -647,7 +805,7 @@ useEffect(() => {
                 className="input"
                 min={1}
                 value={copies}
-                onChange={(e) => setCopies(Number(e.target.value || 1))}
+                onChange={(e) => setCopies(e.target.value)}
                 required
               />
             </div>
@@ -659,7 +817,6 @@ useEffect(() => {
               onChange={(e) => setDescription(e.target.value)}
             />
 
-            {/* Coupon section */}
             <div className="input-row">
               <input
                 type="text"
@@ -671,8 +828,8 @@ useEffect(() => {
               <button
                 type="button"
                 className="order-btn"
-                style={{ maxWidth: 130, minHeight: 40, fontSize: "0.9rem" }}
-                onClick={handleVerifyCoupon}
+                style={{ maxWidth: 140, minHeight: 40, fontSize: "0.9rem" }}
+                onClick={handleApplyCoupon}
                 disabled={couponLoading || formDisabled}
               >
                 {couponLoading ? "Checking..." : "Apply Coupon"}
@@ -682,19 +839,12 @@ useEffect(() => {
             {couponInfo && (
               <div
                 style={{
-                  marginTop: 4,
-                  fontSize: "0.9rem",
-                  color:
-                    couponInfo.status === "available" || couponInfo.status === "applied"
-                      ? "#04793f"
-                      : couponInfo.status === "used"
-                        ? "#c27b00"
-                        : "#c02a1e",
+                  marginTop: 6,
+                  fontSize: "0.92rem",
+                  color: couponInfo.type === "success" ? "#04793f" : "#c02a1e",
                 }}
               >
-                {couponInfo.message}{" "}
-                {couponInfo.discountPercentage > 0 &&
-                  `Discount: ${couponInfo.discountPercentage}%`}
+                {couponInfo.message}
               </div>
             )}
 
@@ -706,11 +856,8 @@ useEffect(() => {
               <select
                 id="paymentMethod"
                 className="input"
-                value={payment}
-                onChange={(e) => {
-                  setPayment(e.target.value);
-                  if (e.target.value !== "UPI") setTransactionImage(null);
-                }}
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
                 required
               >
                 {PAYMENT_OPTIONS.map((opt) => (
@@ -721,40 +868,6 @@ useEffect(() => {
               </select>
             </div>
 
-            {payment === "UPI" && (
-              <>
-                <div className="upi-info">
-                  <img src={qrImg} alt="UPI QR Code" className="qr" />
-                  <p>
-                    UPI ID: <b>papukumarsahu686-2@oksbi</b>
-                  </p>
-                </div>
-
-                <label htmlFor="transactionUpload">
-                  Transaction Details (Upload payment Screenshot)
-                </label>
-                <sub>Max Size: 10MB</sub>
-
-                <input
-                  id="transactionUpload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleTransactionImageChange}
-                  style={{ display: "block", marginTop: 8 }}
-                  required
-                />
-
-                {transactionImage && (
-                  <div style={{ marginTop: 8 }}>
-                    Selected file: {transactionImage.name}{" "}
-                    <button type="button" onClick={() => setTransactionImage(null)} style={{ marginLeft: 8 }}>
-                      Remove
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-
             {file && pages > 0 && (
               <div className="total-cost-box">
                 <p>
@@ -764,29 +877,61 @@ useEffect(() => {
                   </span>
                 </p>
 
-                {couponDiscountPercent === 0 && discountValue > 0 && (
-                  <p>15% Student Discount on Prints: -₹{discountValue.toFixed(2)}</p>
+                {studentDiscount > 0 && (
+                  <p>Student Discount on Prints: -₹{studentDiscount}</p>
                 )}
 
-                {couponDiscountPercent > 0 && couponDiscountAmount > 0 && (
-                  <p>
-                    Coupon Discount ({couponDiscountPercent}% on total): -₹{couponDiscountAmount}
-                  </p>
+                {couponDiscountValue > 0 && (
+                  <p>Coupon Discount: -₹{couponDiscountValue}</p>
                 )}
 
-                <p>New Price: ₹{discountPrice}</p>
+                <p>Final Price: ₹{discountPrice}</p>
+                <p>
+                  Payment Method:{" "}
+                  <b>
+                    {paymentMethod === "Razorpay"
+                      ? "Online Payment"
+                      : "Pay on Delivery"}
+                  </b>
+                </p>
               </div>
             )}
 
-            <button className="order-btn" type="submit" disabled={loading || pages <= 0}>
-              {loading ? "Placing Order..." : "Place Order"}
+            {submitError && (
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  background: "#fff2f2",
+                  color: "#c62828",
+                  fontSize: 14,
+                  fontWeight: 600,
+                }}
+              >
+                {submitError}
+              </div>
+            )}
+
+            <button
+              className="order-btn"
+              type="submit"
+              disabled={loading || profileLoading || pages <= 0}
+            >
+              {loading
+                ? "Processing..."
+                : paymentMethod === "Razorpay"
+                  ? "Pay & Place Order"
+                  : "Place Order"}
             </button>
           </fieldset>
         </form>
 
         <div className="back-btn-wrapper">
           <a href="https://mybookhub.store/" className="back-link">
-            <button className="back-btn">Back to MyBookHub</button>
+            <button className="back-btn" type="button">
+              Back to MyBookHub
+            </button>
           </a>
         </div>
       </div>

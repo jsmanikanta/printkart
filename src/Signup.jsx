@@ -3,7 +3,7 @@ import "./styles/auth.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { api_path } from "../data";
-import logoImg from "/images/logo.png";
+import logoImg from "/images/logo.jpeg";
 import Loader from "./Loading";
 
 function Signup() {
@@ -133,62 +133,6 @@ function Signup() {
                 type="date"
                 name="birthday"
                 value={inputs.birthday}
-                onChange={handleChange}
-              />
-
-              {/* ✅ Optional college list + others */}
-              <select
-                name="college"
-                value={inputs.college}
-                onChange={(e) => {
-                  handleChange(e);
-                  if (e.target.value !== "Others") {
-                    setInputs((prev) => ({ ...prev, otherCollege: "" }));
-                  }
-                }}
-              >
-                <option value="">Select College (optional)</option>
-                {colleges.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-
-              {inputs.college === "Others" && (
-                <input
-                  type="text"
-                  name="otherCollege"
-                  placeholder="Enter College Name"
-                  value={inputs.otherCollege}
-                  onChange={handleChange}
-                />
-              )}
-
-              {/* ✅ Optional */}
-              <input
-                type="text"
-                name="year"
-                placeholder="Year (optional)"
-                value={inputs.year}
-                onChange={handleChange}
-              />
-
-              {/* ✅ Optional */}
-              <input
-                type="text"
-                name="branch"
-                placeholder="Branch (optional)"
-                value={inputs.branch}
-                onChange={handleChange}
-              />
-
-              {/* ✅ Optional */}
-              <input
-                type="text"
-                name="rollno"
-                placeholder="Roll No (optional)"
-                value={inputs.rollno}
                 onChange={handleChange}
               />
 
