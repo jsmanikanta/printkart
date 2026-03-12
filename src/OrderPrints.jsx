@@ -104,9 +104,9 @@ export default function OrderPrints() {
     return ALL_SIDES_OPTIONS;
   }, [color]);
 
-  useEffect(() => {
-    if (!token) navigate("/login");
-  }, [token, navigate]);
+  // useEffect(() => {
+  //   if (!token) navigate("/login");
+  // }, [token, navigate]);
 
   useEffect(() => {
     if (color === "colour" && sides !== "1") {
