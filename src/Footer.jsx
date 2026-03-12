@@ -14,9 +14,7 @@ function Footer() {
         <div className="footer-section">
           <h4>PrintKart</h4>
           <p>
-            PrintKart makes printing simple and convenient for students. Upload
-            your files, choose print options, and get high-quality printouts
-            ready without waiting in queues.
+            PrintKart makes printing simple, fast, and convenient for students. You can upload your documents online, select your preferred print options such as black & white or color, and get high-quality printouts without waiting in long queues. It is designed to save time and provide reliable printing for assignments, notes, project reports, and study materials, making the entire printing process smooth, affordable, and hassle-free for students.
           </p>
         </div>
 
