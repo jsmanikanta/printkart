@@ -39,10 +39,29 @@ const PAYMENT_OPTIONS = [
   { value: "Pay on Delivery", label: "Pay on Delivery" },
 ];
 
+function getFreshToken() {
+  return localStorage.getItem("token")?.trim() || "";
+}
+
 function loadRazorpayScript() {
   return new Promise((resolve) => {
     if (window.Razorpay) {
       resolve(true);
+      return;
+    }
+
+    const existing = document.querySelector(
+      'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
+    );
+
+    if (existing) {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+
+      existing.addEventListener("load", () => resolve(true), { once: true });
+      existing.addEventListener("error", () => resolve(false), { once: true });
       return;
     }
 
@@ -55,10 +74,39 @@ function loadRazorpayScript() {
   });
 }
 
+async function parseResponseSafely(res) {
+  const contentType = res.headers.get("content-type") || "";
+  const text = await res.text();
+
+  if (!text) {
+    return {};
+  }
+
+  if (contentType.includes("application/json")) {
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { message: text };
+    }
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { message: text };
+  }
+}
+
+function getReadableError(data, fallback = "Something went wrong") {
+  if (data?.error && typeof data.error === "string") return data.error;
+  if (data?.message && typeof data.message === "string") return data.message;
+  return fallback;
+}
+
 export default function OrderPrints() {
   const navigate = useNavigate();
   const API = import.meta.env.VITE_API_PATH;
-  const token = useMemo(() => localStorage.getItem("token")?.trim() || "", []);
+  const token = useMemo(() => getFreshToken(), []);
 
   const [activeTab, setActiveTab] = useState("student");
   const [profileLoading, setProfileLoading] = useState(true);
@@ -104,10 +152,6 @@ export default function OrderPrints() {
     return ALL_SIDES_OPTIONS;
   }, [color]);
 
-  // useEffect(() => {
-  //   if (!token) navigate("/login");
-  // }, [token, navigate]);
-
   useEffect(() => {
     if (color === "colour" && sides !== "1") {
       setSides("1");
@@ -116,14 +160,15 @@ export default function OrderPrints() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!token) return;
+      const freshToken = getFreshToken();
+      if (!freshToken) return;
 
       try {
         setProfileLoading(true);
 
         const res = await fetch(`${API}/user/profile`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${freshToken}`,
           },
         });
 
@@ -279,7 +324,9 @@ export default function OrderPrints() {
   };
 
   const handleApplyCoupon = async () => {
-    if (!token) {
+    const freshToken = getFreshToken();
+
+    if (!freshToken) {
       navigate("/login");
       return;
     }
@@ -297,7 +344,7 @@ export default function OrderPrints() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${freshToken}`,
         },
         body: JSON.stringify({
           code: couponCode.trim().toUpperCase(),
@@ -363,8 +410,13 @@ export default function OrderPrints() {
   };
 
   const createPrintOrder = async () => {
-    const formData = new FormData();
+    const freshToken = getFreshToken();
 
+    if (!freshToken) {
+      throw new Error("Please login again.");
+    }
+
+    const formData = new FormData();
     formData.append("file", file);
     formData.append("color", color);
     formData.append("sides", sides);
@@ -387,18 +439,120 @@ export default function OrderPrints() {
     const res = await fetch(`${API}/orders/orderprints`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${freshToken}`,
       },
       body: formData,
     });
 
-    const data = await res.json().catch(() => ({}));
+    const data = await parseResponseSafely(res);
 
     if (!res.ok || !data?.success) {
       throw new Error(data?.message || data?.error || "Failed to create order");
     }
 
     return data.order;
+  };
+
+  const createRazorpayOrder = async (printOrderId) => {
+    const freshToken = getFreshToken();
+
+    if (!freshToken) {
+      throw new Error("Please login again.");
+    }
+
+    const res = await fetch(`${API}/payments/create-order`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${freshToken}`,
+      },
+      body: JSON.stringify({ printOrderId }),
+    });
+
+    const data = await parseResponseSafely(res);
+
+    console.log("Razorpay create-order browser response:", {
+      status: res.status,
+      ok: res.ok,
+      data,
+    });
+
+    const hasUsablePayload =
+      !!data?.key &&
+      !!data?.razorpayOrderId &&
+      Number(data?.amount) > 0 &&
+      !!data?.currency;
+
+    if (hasUsablePayload) {
+      return data;
+    }
+
+    if (!res.ok) {
+      throw new Error(
+        getReadableError(data, `Create-order failed with status ${res.status}`),
+      );
+    }
+
+    throw new Error(getReadableError(data, "Failed to create Razorpay order"));
+  };
+
+  const verifyRazorpayPayment = async ({
+    printOrderId,
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+  }) => {
+    const freshToken = getFreshToken();
+
+    if (!freshToken) {
+      throw new Error("Please login again.");
+    }
+
+    const res = await fetch(`${API}/payments/verify-payment`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${freshToken}`,
+      },
+      body: JSON.stringify({
+        printOrderId,
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+      }),
+    });
+
+    const data = await parseResponseSafely(res);
+
+    if (!res.ok || !data?.success) {
+      throw new Error(getReadableError(data, "Payment verification failed"));
+    }
+
+    return data;
+  };
+
+  const markPaymentFailed = async ({ printOrderId, razorpayOrderId }) => {
+    const freshToken = getFreshToken();
+
+    if (!freshToken || !printOrderId || !razorpayOrderId) {
+      return;
+    }
+
+    try {
+      await fetch(`${API}/payments/payment-failed`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${freshToken}`,
+        },
+        body: JSON.stringify({
+          printOrderId,
+          razorpayOrderId,
+        }),
+      });
+    } catch (error) {
+      console.error("payment-failed update error:", error);
+    }
   };
 
   const openRazorpay = async (order) => {
@@ -408,128 +562,75 @@ export default function OrderPrints() {
       throw new Error("Razorpay SDK failed to load");
     }
 
-    const createOrderRes = await fetch(`${API}/payments/create-order`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        printOrderId: order._id,
-      }),
-    });
+    const printOrderId = order?._id || order?.id;
 
-    const paymentData = await createOrderRes.json().catch(() => ({}));
-
-    if (!createOrderRes.ok || !paymentData?.success) {
-      throw new Error(
-        paymentData?.error ||
-          paymentData?.message ||
-          "Failed to create Razorpay order",
-      );
+    if (!printOrderId) {
+      throw new Error("Order ID missing. Failed to start payment.");
     }
 
-    if (!paymentData?.key) {
-      throw new Error("Razorpay key missing from backend response");
-    }
-
-    if (!paymentData?.razorpayOrderId) {
-      throw new Error("Razorpay order id missing from backend response");
-    }
+    const paymentData = await createRazorpayOrder(printOrderId);
 
     return new Promise((resolve, reject) => {
-      const razorpay = new window.Razorpay({
-        key: paymentData.key,
-        amount: paymentData.amount,
-        currency: paymentData.currency || "INR",
-        name: "PrintKart",
-        description: "Print order payment",
-        order_id: paymentData.razorpayOrderId,
-        handler: async (response) => {
-          try {
-            const verifyRes = await fetch(`${API}/payments/verify-payment`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                printOrderId: order._id,
+      try {
+        const razorpay = new window.Razorpay({
+          key: paymentData.key,
+          amount: Number(paymentData.amount),
+          currency: paymentData.currency || "INR",
+          name: "PrintKart",
+          description: "Print order payment",
+          order_id: paymentData.razorpayOrderId,
+          handler: async (response) => {
+            try {
+              const verifyData = await verifyRazorpayPayment({
+                printOrderId,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-              }),
-            });
-
-            const verifyData = await verifyRes.json().catch(() => ({}));
-
-            if (!verifyRes.ok || !verifyData?.success) {
-              reject(
-                new Error(
-                  verifyData?.error ||
-                    verifyData?.message ||
-                    "Payment verification failed",
-                ),
-              );
-              return;
-            }
-
-            resolve(verifyData);
-          } catch (error) {
-            reject(error);
-          }
-        },
-        modal: {
-          ondismiss: async () => {
-            try {
-              await fetch(`${API}/payments/payment-failed`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                  printOrderId: order._id,
-                  razorpayOrderId: paymentData.razorpayOrderId,
-                }),
               });
+
+              resolve(verifyData);
             } catch (error) {
-              console.error("Payment failed update error:", error);
+              reject(error);
             }
-
-            reject(new Error("Payment cancelled"));
           },
-        },
-        prefill: {
-          name: name.trim(),
-          contact: mobile.replace(/\D/g, "").slice(0, 10),
-        },
-        theme: {
-          color: "#d4a017",
-        },
-      });
-
-      razorpay.on("payment.failed", async (response) => {
-        console.error("Razorpay payment.failed:", response);
-
-        try {
-          await fetch(`${API}/payments/payment-failed`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+          modal: {
+            ondismiss: async () => {
+              await markPaymentFailed({
+                printOrderId,
+                razorpayOrderId: paymentData.razorpayOrderId,
+              });
+              reject(new Error("Payment cancelled"));
             },
-            body: JSON.stringify({
-              printOrderId: order._id,
-              razorpayOrderId: paymentData.razorpayOrderId,
-            }),
-          });
-        } catch (error) {
-          console.error("payment.failed callback error:", error);
-        }
-      });
+          },
+          prefill: {
+            name: name.trim(),
+            contact: mobile.replace(/\D/g, "").slice(0, 10),
+          },
+          theme: {
+            color: "#d4a017",
+          },
+        });
 
-      razorpay.open();
+        razorpay.on("payment.failed", async (response) => {
+          console.error("Razorpay payment.failed:", response);
+
+          await markPaymentFailed({
+            printOrderId,
+            razorpayOrderId: paymentData.razorpayOrderId,
+          });
+
+          reject(
+            new Error(
+              response?.error?.description ||
+                "Payment failed. Please try again.",
+            ),
+          );
+        });
+
+        razorpay.open();
+      } catch (error) {
+        reject(new Error(error?.message || "Unable to open Razorpay checkout"));
+      }
     });
   };
 
@@ -630,6 +731,7 @@ export default function OrderPrints() {
             <h2>
               {activeTab === "student" ? "Student" : "Home"} Printout Order
             </h2>
+
             <span>Name:</span>
             <input
               type="text"
