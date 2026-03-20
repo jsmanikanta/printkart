@@ -43,6 +43,10 @@ function getFreshToken() {
   return localStorage.getItem("token")?.trim() || "";
 }
 
+function normalizeApiBase(value) {
+  return (value || "").trim().replace(/\/+$/, "");
+}
+
 function loadRazorpayScript() {
   return new Promise((resolve) => {
     if (window.Razorpay) {
@@ -51,15 +55,10 @@ function loadRazorpayScript() {
     }
 
     const existing = document.querySelector(
-      'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
+      'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
     );
 
     if (existing) {
-      if (window.Razorpay) {
-        resolve(true);
-        return;
-      }
-
       existing.addEventListener("load", () => resolve(true), { once: true });
       existing.addEventListener("error", () => resolve(false), { once: true });
       return;
@@ -76,36 +75,44 @@ function loadRazorpayScript() {
 
 async function parseResponseSafely(res) {
   const contentType = res.headers.get("content-type") || "";
-  const text = await res.text();
+  const rawText = await res.text();
 
-  if (!text) {
-    return {};
+  if (!rawText) {
+    return { _rawText: "" };
   }
 
   if (contentType.includes("application/json")) {
     try {
-      return JSON.parse(text);
+      const parsed = JSON.parse(rawText);
+      return { ...parsed, _rawText: rawText };
     } catch {
-      return { message: text };
+      return { message: rawText, _rawText: rawText };
     }
   }
 
   try {
-    return JSON.parse(text);
+    const parsed = JSON.parse(rawText);
+    return { ...parsed, _rawText: rawText };
   } catch {
-    return { message: text };
+    return { message: rawText, _rawText: rawText };
   }
 }
 
 function getReadableError(data, fallback = "Something went wrong") {
   if (data?.error && typeof data.error === "string") return data.error;
   if (data?.message && typeof data.message === "string") return data.message;
+  if (data?._rawText && typeof data._rawText === "string" && data._rawText.trim()) {
+    return data._rawText;
+  }
   return fallback;
 }
 
 export default function OrderPrints() {
   const navigate = useNavigate();
-  const API = import.meta.env.VITE_API_PATH;
+  const API = useMemo(
+    () => normalizeApiBase(import.meta.env.VITE_API_PATH),
+    []
+  );
   const token = useMemo(() => getFreshToken(), []);
 
   const [activeTab, setActiveTab] = useState("student");
@@ -161,7 +168,7 @@ export default function OrderPrints() {
   useEffect(() => {
     const fetchProfile = async () => {
       const freshToken = getFreshToken();
-      if (!freshToken) return;
+      if (!freshToken || !API) return;
 
       try {
         setProfileLoading(true);
@@ -286,7 +293,7 @@ export default function OrderPrints() {
 
     const finalTotal = Math.max(
       0,
-      baseTotal - autoStudentDiscount - couponDiscountValue,
+      baseTotal - autoStudentDiscount - couponDiscountValue
     );
 
     setPrintCost(Math.ceil(currentPrintCost));
@@ -386,6 +393,7 @@ export default function OrderPrints() {
   };
 
   const validateForm = () => {
+    if (!API) return "Frontend API path is missing. Check VITE_API_PATH.";
     if (!file) return "Please upload a PDF file";
     if (!pages || pages <= 0) return "PDF page count not detected";
     if (!name.trim()) return "Full name is required";
@@ -436,7 +444,10 @@ export default function OrderPrints() {
       formData.append("address", address.trim());
     }
 
-    const res = await fetch(`${API}/orders/orderprints`, {
+    const url = `${API}/orders/orderprints`;
+    console.log("Calling create print order URL:", url);
+
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${freshToken}`,
@@ -445,9 +456,10 @@ export default function OrderPrints() {
     });
 
     const data = await parseResponseSafely(res);
+    console.log("Create print order response:", { status: res.status, data });
 
     if (!res.ok || !data?.success) {
-      throw new Error(data?.message || data?.error || "Failed to create order");
+      throw new Error(getReadableError(data, "Failed to create order"));
     }
 
     return data.order;
@@ -460,13 +472,20 @@ export default function OrderPrints() {
       throw new Error("Please login again.");
     }
 
-    const res = await fetch(`${API}/payments/create-order`, {
+    const url = `${API}/payments/create-order`;
+    const payload = { printOrderId };
+
+    console.log("Calling Razorpay create-order URL:", url);
+    console.log("Razorpay create-order payload:", payload);
+    console.log("Frontend API base:", API);
+
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${freshToken}`,
       },
-      body: JSON.stringify({ printOrderId }),
+      body: JSON.stringify(payload),
     });
 
     const data = await parseResponseSafely(res);
@@ -480,20 +499,18 @@ export default function OrderPrints() {
     const hasUsablePayload =
       !!data?.key &&
       !!data?.razorpayOrderId &&
-      Number(data?.amount) > 0 &&
-      !!data?.currency;
+      Number(data?.amount) > 0;
 
     if (hasUsablePayload) {
       return data;
     }
 
-    if (!res.ok) {
-      throw new Error(
-        getReadableError(data, `Create-order failed with status ${res.status}`),
-      );
-    }
-
-    throw new Error(getReadableError(data, "Failed to create Razorpay order"));
+    throw new Error(
+      getReadableError(
+        data,
+        `Failed to create Razorpay order (HTTP ${res.status})`
+      )
+    );
   };
 
   const verifyRazorpayPayment = async ({
@@ -622,14 +639,16 @@ export default function OrderPrints() {
           reject(
             new Error(
               response?.error?.description ||
-                "Payment failed. Please try again.",
-            ),
+                "Payment failed. Please try again."
+            )
           );
         });
 
         razorpay.open();
       } catch (error) {
-        reject(new Error(error?.message || "Unable to open Razorpay checkout"));
+        reject(
+          new Error(error?.message || "Unable to open Razorpay checkout")
+        );
       }
     });
   };
@@ -724,13 +743,8 @@ export default function OrderPrints() {
         </div>
 
         <form className="order-form-wrap" onSubmit={handleSubmit}>
-          <fieldset
-            disabled={formDisabled}
-            style={{ border: "none", padding: 0 }}
-          >
-            <h2>
-              {activeTab === "student" ? "Student" : "Home"} Printout Order
-            </h2>
+          <fieldset disabled={formDisabled} style={{ border: "none", padding: 0 }}>
+            <h2>{activeTab === "student" ? "Student" : "Home"} Printout Order</h2>
 
             <span>Name:</span>
             <input
@@ -775,6 +789,7 @@ export default function OrderPrints() {
                     </option>
                   ))}
                 </select>
+
                 <span>Year of Study</span>
                 <input
                   type="text"
@@ -784,6 +799,7 @@ export default function OrderPrints() {
                   onChange={(e) => setYear(e.target.value)}
                   required
                 />
+
                 Branch:
                 <input
                   type="text"
@@ -793,6 +809,7 @@ export default function OrderPrints() {
                   onChange={(e) => setSection(e.target.value)}
                   required
                 />
+
                 <span>Registration Number:</span>
                 <input
                   type="text"
@@ -1009,6 +1026,7 @@ export default function OrderPrints() {
                   color: "#c62828",
                   fontSize: 14,
                   fontWeight: 600,
+                  whiteSpace: "pre-wrap",
                 }}
               >
                 {submitError}
@@ -1023,8 +1041,8 @@ export default function OrderPrints() {
               {loading
                 ? "Processing..."
                 : paymentMethod === "Razorpay"
-                  ? "Pay & Place Order"
-                  : "Place Order"}
+                ? "Pay & Place Order"
+                : "Place Order"}
             </button>
           </fieldset>
         </form>
