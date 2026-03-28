@@ -8,7 +8,7 @@ function VideoHelpSection() {
       title: "Price List",
       about: "Detailed print & binding prices",
     },{
-      src: "/images/Polariads.jpg",
+      src: "/images/Polariaids.jpg",
       type: "image",
       title: "Polariads at printkart ",
       about: "Turn your memories into beautiful polaroids — choose your size and get them delivered hassle-free",
