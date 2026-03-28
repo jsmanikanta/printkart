@@ -7,8 +7,7 @@ function VideoHelpSection() {
       type: "image",
       title: "Price List",
       about: "Detailed print & binding prices",
-    },
-    {
+    },{
       src: "/images/Polariads.jpg",
       type: "image",
       title: "Polariads at printkart ",
@@ -16,7 +15,7 @@ function VideoHelpSection() {
     },
   ];
 
-  return 
+  return (
     <div className="help-page-root">
       <style>{`
         html, body, #root {
