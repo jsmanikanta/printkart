@@ -55,7 +55,7 @@ function loadRazorpayScript() {
     }
 
     const existing = document.querySelector(
-      'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+      'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
     );
 
     if (existing) {
@@ -101,7 +101,11 @@ async function parseResponseSafely(res) {
 function getReadableError(data, fallback = "Something went wrong") {
   if (data?.error && typeof data.error === "string") return data.error;
   if (data?.message && typeof data.message === "string") return data.message;
-  if (data?._rawText && typeof data._rawText === "string" && data._rawText.trim()) {
+  if (
+    data?._rawText &&
+    typeof data._rawText === "string" &&
+    data._rawText.trim()
+  ) {
     return data._rawText;
   }
   return fallback;
@@ -111,7 +115,7 @@ export default function OrderPrints() {
   const navigate = useNavigate();
   const API = useMemo(
     () => normalizeApiBase(import.meta.env.VITE_API_PATH),
-    []
+    [],
   );
   const token = useMemo(() => getFreshToken(), []);
 
@@ -166,74 +170,74 @@ export default function OrderPrints() {
   }, [color, sides]);
 
   useEffect(() => {
-  const fetchProfile = async () => {
-    const freshToken = getFreshToken();
+    const fetchProfile = async () => {
+      const freshToken = getFreshToken();
 
-    if (!API) {
-      setProfileLoading(false);
-      return;
-    }
-
-    if (!freshToken) {
-      setProfileLoading(false);
-      return;
-    }
-
-    try {
-      setProfileLoading(true);
-
-      const res = await fetch(`${API}/user/profile`, {
-        headers: {
-          Authorization: `Bearer ${freshToken}`,
-        },
-      });
-
-      if (!res.ok) {
+      if (!API) {
         setProfileLoading(false);
         return;
       }
 
-      const profile = await res.json();
-
-      const fullName = profile?.fullname || profile?.user?.fullname || "";
-      const mobileNumber =
-        profile?.mobileNumber || profile?.user?.mobileNumber || "";
-      const userCollege = profile?.college || profile?.user?.college || "";
-      const userYear = profile?.year || profile?.user?.year || "";
-      const userSection =
-        profile?.section ||
-        profile?.branch ||
-        profile?.user?.section ||
-        profile?.user?.branch ||
-        "";
-      const userRollno = profile?.rollno || profile?.user?.rollno || "";
-      const userType = (
-        profile?.usertype ||
-        profile?.user?.usertype ||
-        ""
-      ).toLowerCase();
-
-      if (fullName) setName(fullName);
-      if (mobileNumber) {
-        setMobile(String(mobileNumber).replace(/\D/g, "").slice(0, 10));
+      if (!freshToken) {
+        setProfileLoading(false);
+        return;
       }
-      if (userCollege) setCollege(userCollege);
-      if (userYear) setYear(userYear);
-      if (userSection) setSection(userSection);
-      if (userRollno) setRollno(userRollno);
 
-      if (userType.includes("student")) {
-        setActiveTab("student");
+      try {
+        setProfileLoading(true);
+
+        const res = await fetch(`${API}/user/profile`, {
+          headers: {
+            Authorization: `Bearer ${freshToken}`,
+          },
+        });
+
+        if (!res.ok) {
+          setProfileLoading(false);
+          return;
+        }
+
+        const profile = await res.json();
+
+        const fullName = profile?.fullname || profile?.user?.fullname || "";
+        const mobileNumber =
+          profile?.mobileNumber || profile?.user?.mobileNumber || "";
+        const userCollege = profile?.college || profile?.user?.college || "";
+        const userYear = profile?.year || profile?.user?.year || "";
+        const userSection =
+          profile?.section ||
+          profile?.branch ||
+          profile?.user?.section ||
+          profile?.user?.branch ||
+          "";
+        const userRollno = profile?.rollno || profile?.user?.rollno || "";
+        const userType = (
+          profile?.usertype ||
+          profile?.user?.usertype ||
+          ""
+        ).toLowerCase();
+
+        if (fullName) setName(fullName);
+        if (mobileNumber) {
+          setMobile(String(mobileNumber).replace(/\D/g, "").slice(0, 10));
+        }
+        if (userCollege) setCollege(userCollege);
+        if (userYear) setYear(userYear);
+        if (userSection) setSection(userSection);
+        if (userRollno) setRollno(userRollno);
+
+        if (userType.includes("student")) {
+          setActiveTab("student");
+        }
+      } catch (error) {
+        console.error("Profile fetch error:", error);
+      } finally {
+        setProfileLoading(false);
       }
-    } catch (error) {
-      console.error("Profile fetch error:", error);
-    } finally {
-      setProfileLoading(false);
-    }
-  };
+    };
 
-  fetchProfile();
-}, [API, token]);
+    fetchProfile();
+  }, [API, token]);
 
   useEffect(() => {
     if (!file) {
@@ -305,7 +309,7 @@ export default function OrderPrints() {
 
     const finalTotal = Math.max(
       0,
-      baseTotal - autoStudentDiscount - couponDiscountValue
+      baseTotal - autoStudentDiscount - couponDiscountValue,
     );
 
     setPrintCost(Math.ceil(currentPrintCost));
@@ -509,9 +513,7 @@ export default function OrderPrints() {
     });
 
     const hasUsablePayload =
-      !!data?.key &&
-      !!data?.razorpayOrderId &&
-      Number(data?.amount) > 0;
+      !!data?.key && !!data?.razorpayOrderId && Number(data?.amount) > 0;
 
     if (hasUsablePayload) {
       return data;
@@ -520,8 +522,8 @@ export default function OrderPrints() {
     throw new Error(
       getReadableError(
         data,
-        `Failed to create Razorpay order (HTTP ${res.status})`
-      )
+        `Failed to create Razorpay order (HTTP ${res.status})`,
+      ),
     );
   };
 
@@ -651,16 +653,14 @@ export default function OrderPrints() {
           reject(
             new Error(
               response?.error?.description ||
-                "Payment failed. Please try again."
-            )
+                "Payment failed. Please try again.",
+            ),
           );
         });
 
         razorpay.open();
       } catch (error) {
-        reject(
-          new Error(error?.message || "Unable to open Razorpay checkout")
-        );
+        reject(new Error(error?.message || "Unable to open Razorpay checkout"));
       }
     });
   };
@@ -755,8 +755,13 @@ export default function OrderPrints() {
         </div>
 
         <form className="order-form-wrap" onSubmit={handleSubmit}>
-          <fieldset disabled={formDisabled} style={{ border: "none", padding: 0 }}>
-            <h2>{activeTab === "student" ? "Student" : "Home"} Printout Order</h2>
+          <fieldset
+            disabled={formDisabled}
+            style={{ border: "none", padding: 0 }}
+          >
+            <h2>
+              {activeTab === "student" ? "Student" : "Home"} Printout Order
+            </h2>
 
             <span>Name:</span>
             <input
@@ -801,7 +806,6 @@ export default function OrderPrints() {
                     </option>
                   ))}
                 </select>
-
                 <span>Year of Study</span>
                 <input
                   type="text"
@@ -811,7 +815,6 @@ export default function OrderPrints() {
                   onChange={(e) => setYear(e.target.value)}
                   required
                 />
-
                 Branch:
                 <input
                   type="text"
@@ -821,7 +824,6 @@ export default function OrderPrints() {
                   onChange={(e) => setSection(e.target.value)}
                   required
                 />
-
                 <span>Registration Number:</span>
                 <input
                   type="text"
@@ -864,18 +866,20 @@ export default function OrderPrints() {
               <div className="pdf-pages-info">Pages detected: {pages}</div>
             )}
 
-            <span>Worried about large file size?</span>
+            <span style={{ marginBottom: "10px" }}>
+              Worried about large file size?
+            </span>
             <br />
             <a
               href="https://www.ilovepdf.com/compress_pdf"
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                marginTop: "8px",
+                marginTop: "4px",
+                marginBottom: "10px",
                 padding: "6px 12px",
                 backgroundColor: "#007bff",
                 color: "#fff",
-                border: "none",
                 borderRadius: "4px",
                 fontSize: "12px",
                 cursor: "pointer",
@@ -887,7 +891,6 @@ export default function OrderPrints() {
             </a>
 
             <br />
-
             <div className="input-row">
               <span>Colour options</span>
               <select
@@ -1053,8 +1056,8 @@ export default function OrderPrints() {
               {loading
                 ? "Processing..."
                 : paymentMethod === "Razorpay"
-                ? "Pay & Place Order"
-                : "Place Order"}
+                  ? "Pay & Place Order"
+                  : "Place Order"}
             </button>
           </fieldset>
         </form>
