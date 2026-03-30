@@ -166,62 +166,74 @@ export default function OrderPrints() {
   }, [color, sides]);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const freshToken = getFreshToken();
-      if (!freshToken || !API) return;
+  const fetchProfile = async () => {
+    const freshToken = getFreshToken();
 
-      try {
-        setProfileLoading(true);
+    if (!API) {
+      setProfileLoading(false);
+      return;
+    }
 
-        const res = await fetch(`${API}/user/profile`, {
-          headers: {
-            Authorization: `Bearer ${freshToken}`,
-          },
-        });
+    if (!freshToken) {
+      setProfileLoading(false);
+      return;
+    }
 
-        if (!res.ok) return;
+    try {
+      setProfileLoading(true);
 
-        const profile = await res.json();
+      const res = await fetch(`${API}/user/profile`, {
+        headers: {
+          Authorization: `Bearer ${freshToken}`,
+        },
+      });
 
-        const fullName = profile?.fullname || profile?.user?.fullname || "";
-        const mobileNumber =
-          profile?.mobileNumber || profile?.user?.mobileNumber || "";
-        const userCollege = profile?.college || profile?.user?.college || "";
-        const userYear = profile?.year || profile?.user?.year || "";
-        const userSection =
-          profile?.section ||
-          profile?.branch ||
-          profile?.user?.section ||
-          profile?.user?.branch ||
-          "";
-        const userRollno = profile?.rollno || profile?.user?.rollno || "";
-        const userType = (
-          profile?.usertype ||
-          profile?.user?.usertype ||
-          ""
-        ).toLowerCase();
-
-        if (fullName) setName(fullName);
-        if (mobileNumber) {
-          setMobile(String(mobileNumber).replace(/\D/g, "").slice(0, 10));
-        }
-        if (userCollege) setCollege(userCollege);
-        if (userYear) setYear(userYear);
-        if (userSection) setSection(userSection);
-        if (userRollno) setRollno(userRollno);
-
-        if (userType.includes("student")) {
-          setActiveTab("student");
-        }
-      } catch (error) {
-        console.error("Profile fetch error:", error);
-      } finally {
+      if (!res.ok) {
         setProfileLoading(false);
+        return;
       }
-    };
 
-    fetchProfile();
-  }, [API, token]);
+      const profile = await res.json();
+
+      const fullName = profile?.fullname || profile?.user?.fullname || "";
+      const mobileNumber =
+        profile?.mobileNumber || profile?.user?.mobileNumber || "";
+      const userCollege = profile?.college || profile?.user?.college || "";
+      const userYear = profile?.year || profile?.user?.year || "";
+      const userSection =
+        profile?.section ||
+        profile?.branch ||
+        profile?.user?.section ||
+        profile?.user?.branch ||
+        "";
+      const userRollno = profile?.rollno || profile?.user?.rollno || "";
+      const userType = (
+        profile?.usertype ||
+        profile?.user?.usertype ||
+        ""
+      ).toLowerCase();
+
+      if (fullName) setName(fullName);
+      if (mobileNumber) {
+        setMobile(String(mobileNumber).replace(/\D/g, "").slice(0, 10));
+      }
+      if (userCollege) setCollege(userCollege);
+      if (userYear) setYear(userYear);
+      if (userSection) setSection(userSection);
+      if (userRollno) setRollno(userRollno);
+
+      if (userType.includes("student")) {
+        setActiveTab("student");
+      }
+    } catch (error) {
+      console.error("Profile fetch error:", error);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  fetchProfile();
+}, [API, token]);
 
   useEffect(() => {
     if (!file) {
