@@ -475,7 +475,7 @@ export default function OrderPrints() {
     console.log("Create print order response:", { status: res.status, data });
 
     if (!res.ok || !data?.success) {
-      throw new Error(getReadableError(data, "Failed to create order"));
+      throw new Error(getReadableError(data, "Order failed order again"));
     }
 
     return data.order;
@@ -520,10 +520,7 @@ export default function OrderPrints() {
     }
 
     throw new Error(
-      getReadableError(
-        data,
-        `Failed to create Razorpay order (HTTP ${res.status})`,
-      ),
+      getReadableError(data, `Payment not initiated (HTTP ${res.status})`),
     );
   };
 
@@ -590,7 +587,7 @@ export default function OrderPrints() {
     const scriptLoaded = await loadRazorpayScript();
 
     if (!scriptLoaded) {
-      throw new Error("Razorpay SDK failed to load");
+      throw new Error("Razorpay error");
     }
 
     const printOrderId = order?._id || order?.id;
@@ -610,6 +607,7 @@ export default function OrderPrints() {
           name: "PrintKart",
           description: "Print order payment",
           order_id: paymentData.razorpayOrderId,
+
           handler: async (response) => {
             try {
               const verifyData = await verifyRazorpayPayment({
@@ -624,31 +622,47 @@ export default function OrderPrints() {
               reject(error);
             }
           },
+
           modal: {
             ondismiss: async () => {
-              await markPaymentFailed({
-                printOrderId,
-                razorpayOrderId: paymentData.razorpayOrderId,
-              });
+              try {
+                await markPaymentFailed({
+                  printOrderId,
+                  razorpayOrderId: paymentData.razorpayOrderId,
+                  status: "cancelled",
+                });
+              } catch (err) {
+                console.error("Cancel API error:", err);
+              }
+
               reject(new Error("Payment cancelled"));
             },
           },
+
           prefill: {
             name: name.trim(),
             contact: mobile.replace(/\D/g, "").slice(0, 10),
           },
+
           theme: {
             color: "#d4a017",
           },
         });
 
+        // 🔥 Payment failure handler
         razorpay.on("payment.failed", async (response) => {
           console.error("Razorpay payment.failed:", response);
 
-          await markPaymentFailed({
-            printOrderId,
-            razorpayOrderId: paymentData.razorpayOrderId,
-          });
+          try {
+            await markPaymentFailed({
+              printOrderId,
+              razorpayOrderId: paymentData.razorpayOrderId,
+              status: "failed",
+              reason: response?.error?.description,
+            });
+          } catch (err) {
+            console.error("Failure API error:", err);
+          }
 
           reject(
             new Error(

@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./styles/styles.css";
 import { api_path } from "../data";
-import Signup from "./Signup";
 import Loader from "./Loading";
 
 function HomePage() {
@@ -56,7 +55,7 @@ function HomePage() {
           setUserName(response.data.user.fullname);
         }
       } catch (error) {
-        console.error("Failed to fetch user profile:", error);
+        console.error("Login again", error);
       } finally {
         setLoading(false);
       }

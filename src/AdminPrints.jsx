@@ -14,7 +14,7 @@ const STATUS_OPTIONS = [
   "Cancelled",
 ];
 
-const PAYMENT_STATUS_OPTIONS = ["pending", "paid", "failed"];
+const PAYMENT_STATUS_OPTIONS = ["pending", "paid", "failed","refunded"];
 
 export default function AdminPrints() {
   const navigate = useNavigate();

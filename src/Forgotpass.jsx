@@ -46,13 +46,12 @@ export default function ForgotPassword() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unknown error");
 
-      setSuccess("Password reset successful! You can now login.");
+      setSuccess("Password reset successful!");
       setIdentifier("");
       setNewPassword("");
       setConfirm("");
 
-      // optional: auto redirect after success
-      // setTimeout(() => navigate("/login"), 1000);
+      setTimeout(() => navigate("/login"), 1000);
     } catch (err) {
       setError(err.message || "Something went wrong");
     } finally {

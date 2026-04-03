@@ -10,7 +10,6 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="footer-content">
-        {/* About */}
         <div className="footer-section">
           <h4>PrintKart</h4>
           <p>

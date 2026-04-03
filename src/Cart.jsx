@@ -41,7 +41,7 @@ function CartMobile() {
           setOrders([]);
         }
       } catch (error) {
-        console.error("Fetch user profile error:", error);
+        console.error("Login again", error);
         setUser(null);
         setOrders([]);
         localStorage.removeItem("token");
