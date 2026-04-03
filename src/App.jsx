@@ -5,7 +5,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 
 import Cart from "./Cart";
-import VideoHelpSection from "./Help";
+import QuickInfoSection from "./Help";
 import OrderPrints from "./OrderPrints";
 import Signup from "./Signup";
 import Login from "./Login";
@@ -30,7 +30,7 @@ function App() {
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/prints-cart" element={<Cart />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/help" element={<VideoHelpSection />} />
+        <Route path="/quick-info" element={<QuickInfoSection />} />
         <Route path="/mylocations" element={<PickupAddress />} />
         <Route path="/addlocation" element={<Addlocation />} />
         <Route path="/settings" element={<Settings />} />

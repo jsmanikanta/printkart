@@ -50,8 +50,8 @@
 }
 
 .pk-user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 27px;
+  height: 25px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;

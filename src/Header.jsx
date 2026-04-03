@@ -11,7 +11,7 @@ function Header() {
   const goToLogin = () => navigate("/login");
   const goToCart = () => navigate("/prints-cart");
   const goToHome = () => navigate("/");
-  const goToHelp = () => navigate("/help");
+  const goToHelp = () => navigate("/quick-info");
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -61,11 +61,11 @@ function Header() {
 
           <div className="pk-help-section" onClick={goToHelp}>
             <img
-              src="/images/help-icon.png"
+              src="/images/help-icon.jpg"
               alt="Help"
               className="pk-help-icon"
             />
-            <span className="pk-help-text">Help</span>
+            <span className="pk-help-text">Quick Info</span>
           </div>
 
           <div className="pk-cart-section" onClick={goToCart}>
