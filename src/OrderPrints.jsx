@@ -441,6 +441,8 @@ export default function OrderPrints() {
     }
 
     const formData = new FormData();
+    formData.append("name", name.trim());
+    formData.append("mobile", mobile.replace(/\D/g, "").slice(0, 10));
     formData.append("file", file);
     formData.append("color", color);
     formData.append("sides", sides);
