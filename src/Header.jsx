@@ -74,7 +74,7 @@ function Header() {
               alt="Cart"
               className="pk-cart-icon"
             />
-            <span className="pk-cart-text">Prints Vault</span>
+            <span className="pk-cart-text">Vault</span>
           </div>
         </div>
       </div>
