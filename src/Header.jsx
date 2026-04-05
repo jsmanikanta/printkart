@@ -65,7 +65,7 @@ function Header() {
               alt="Help"
               className="pk-help-icon"
             />
-            <span className="pk-help-text">Order Prints</span>
+            <span className="pk-help-text">Print</span>
           </div>
 
           <div className="pk-cart-section" onClick={goToCart}>
