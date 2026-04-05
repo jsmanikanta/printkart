@@ -6,7 +6,7 @@ function QuickInfoSection() {
       src: "/images/prices.jpeg",
       title: "Price List",
       about: "Detailed print & binding prices",
-      link: "https://printkart.mybookhub.store/order-prints",
+      link: "https://printkart.mybookhub.store/#/order-prints",
     },
     {
       src: "/images/Polariaids.jpg",
@@ -32,9 +32,12 @@ function QuickInfoSection() {
   ];
 
   const handleOrderNow = (link) => {
-    window.open(link, "_blank", "noopener,noreferrer");
+    if (link.includes("printkart.mybookhub.store")) {
+      window.location.href = link;
+    } else {
+      window.open(link, "_blank", "noopener,noreferrer");
+    }
   };
-
   return (
     <div className="quick-root">
       <style>{`
@@ -156,7 +159,10 @@ function QuickInfoSection() {
 
             <div className="quick-card-about">{item.about}</div>
 
-            <button className="order-btn" onClick={handleOrderNow}>
+            <button
+              className="order-btn"
+              onClick={() => handleOrderNow(item.link)}
+            >
               Order Now
             </button>
           </div>
