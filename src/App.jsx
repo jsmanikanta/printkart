@@ -5,7 +5,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 
 import Cart from "./Cart";
-import QuickInfoSection from "./Help";
+import OrderPrintsSection from "./Home";
 import OrderPrints from "./OrderPrints";
 import Signup from "./Signup";
 import Login from "./Login";
@@ -24,13 +24,13 @@ function App() {
     <>
       <Header />
       <Routes>
-        <Route path="/" element={<OrderPrints />} />
+        <Route path="/order-prints" element={<OrderPrints />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/prints-cart" element={<Cart />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/quick-info" element={<QuickInfoSection />} />
+        <Route path="/" element={<OrderPrintsSection />} />
         <Route path="/mylocations" element={<PickupAddress />} />
         <Route path="/addlocation" element={<Addlocation />} />
         <Route path="/settings" element={<Settings />} />

@@ -4,28 +4,35 @@ function QuickInfoSection() {
   const mediaItems = [
     {
       src: "/images/prices.jpeg",
-      type: "image",
       title: "Price List",
       about: "Detailed print & binding prices",
+      link: "https://printkart.mybookhub.store/order-prints",
     },
     {
       src: "/images/Polariaids.jpg",
-      type: "image",
       title: "Polaroids at PrintKart",
       about:
         "Turn your memories into beautiful polaroids — choose your size and get them delivered hassle-free",
+      link: "https://www.instagram.com/print_kart0001/",
     },
     {
       src: "/images/phone_case.jpeg",
-      type: "image",
       title: "Custom Phone Cases",
       about:
         "Turn your favorite memories into a phone case and carry them with you wherever you go",
+      link: "https://www.instagram.com/print_kart0001/",
+    },
+    {
+      src: "/images/pock.jpeg",
+      title: "Mini Polaroids Offer",
+      about:
+        "Get 35 mini polaroids for just ₹99 — capture your beautiful memories in a cute aesthetic way.",
+      link: "https://www.instagram.com/print_kart0001/",
     },
   ];
 
-  const handleOrderNow = () => {
-    window.open("https://instagram.com/print_kart0001", "_blank");
+  const handleOrderNow = (link) => {
+    window.open(link, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -143,11 +150,7 @@ function QuickInfoSection() {
       <div className="card-container">
         {mediaItems.map((item, idx) => (
           <div className="quick-card" key={idx}>
-            <img
-              src={item.src}
-              alt={item.title}
-              className="quick-image"
-            />
+            <img src={item.src} alt={item.title} className="quick-image" />
 
             <div className="quick-card-title">{item.title}</div>
 

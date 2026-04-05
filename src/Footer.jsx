@@ -57,6 +57,10 @@ function Footer() {
             Phone: 
             <a href="tel:+918074177294"> 8074177294</a>
           </p>
+          <p>
+            Instagram:
+            <a href="https://www.instagram.com/print_kart0001/">printkat0001</a>
+          </p>
 
           <p>
             Support: 
