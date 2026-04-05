@@ -6,7 +6,7 @@ function QuickInfoSection() {
       src: "/images/prices.jpeg",
       title: "Price List",
       about: "Detailed print & binding prices",
-      link: "https://printkart.mybookhub.store/order-prints",
+      link: "https://printkart.mybookhub.store/#/order-prints",
     },
     {
       src: "/images/Polariaids.jpg",
