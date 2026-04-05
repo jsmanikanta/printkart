@@ -1,12 +1,14 @@
 import React from "react";
-
+import { useNavigate } from "react-router-dom";
 function QuickInfoSection() {
+  const navigate = useNavigate();
   const mediaItems = [
     {
       src: "/images/prices.jpeg",
       title: "Price List",
       about: "Detailed print & binding prices",
-      link: "https://printkart.mybookhub.store/#/order-prints",
+      link: "/order-prints",
+      isInternal: true,
     },
     {
       src: "/images/Polariaids.jpg",
@@ -14,6 +16,7 @@ function QuickInfoSection() {
       about:
         "Turn your memories into beautiful polaroids — choose your size and get them delivered hassle-free",
       link: "https://www.instagram.com/print_kart0001/",
+      isInternal: false,
     },
     {
       src: "/images/phone_case.jpeg",
@@ -21,6 +24,7 @@ function QuickInfoSection() {
       about:
         "Turn your favorite memories into a phone case and carry them with you wherever you go",
       link: "https://www.instagram.com/print_kart0001/",
+      isInternal: false,
     },
     {
       src: "/images/pock.jpeg",
@@ -28,19 +32,26 @@ function QuickInfoSection() {
       about:
         "Get 35 mini polaroids for just ₹99 — capture your beautiful memories in a cute aesthetic way.",
       link: "https://www.instagram.com/print_kart0001/",
+      isInternal: false,
     },
   ];
 
-  const handleOrderNow = (link) => {
-    if (link.includes("printkart.mybookhub.store")) {
-      window.location.href = link;
+  const handleOrderNow = (item) => {
+    if (item.isInternal) {
+      navigate(item.link); // ✅ CORRECT
     } else {
-      window.open(link, "_blank", "noopener,noreferrer");
+      const newWindow = window.open(item.link, "_blank");
+      if (newWindow) newWindow.opener = null;
     }
   };
+
   return (
     <div className="quick-root">
       <style>{`
+        * {
+          box-sizing: border-box;
+        }
+
         html, body, #root {
           margin: 0;
           padding: 0;
@@ -55,51 +66,62 @@ function QuickInfoSection() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          padding: 30px 10px 50px;
+          padding: 40px 12px 60px;
         }
 
         .quick-title {
-          font-size: 28px;
-          font-weight: 700;
-          color: #1f2937;
-          margin-bottom: 25px;
+          font-size: 30px;
+          font-weight: 800;
+          color: #111827;
+          margin-bottom: 30px;
+          text-align: center;
         }
 
         .card-container {
-          display: flex;
-          flex-direction: column;
-          gap: 30px;
           width: 100%;
-          align-items: center;
+          max-width: 1100px;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 25px;
         }
 
         .quick-card {
-          width: min(360px, 92vw);
           background: #ffffff;
           border-radius: 20px;
-          padding: 20px 16px 24px;
+          padding: 18px;
           box-shadow: 0 10px 25px rgba(0,0,0,0.08);
           display: flex;
           flex-direction: column;
           align-items: center;
-          transition: transform 0.2s ease;
+          transition: 0.3s;
         }
 
         .quick-card:hover {
-          transform: translateY(-4px);
+          transform: translateY(-6px);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        }
+
+        .image-frame {
+          width: 100%;
+          height: 260px;
+          background: #f3f4f6;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          margin-bottom: 14px;
         }
 
         .quick-image {
-          width: 100%;
-          border-radius: 14px;
-          object-fit: cover;
-          margin-bottom: 14px;
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
         }
 
         .quick-card-title {
           font-size: 18px;
-          font-weight: 600;
-          color: #111827;
+          font-weight: 700;
           margin-bottom: 6px;
           text-align: center;
         }
@@ -108,9 +130,7 @@ function QuickInfoSection() {
           font-size: 14px;
           color: #4b5563;
           text-align: center;
-          line-height: 1.5;
           margin-bottom: 16px;
-          padding: 0 6px;
         }
 
         .order-btn {
@@ -118,51 +138,30 @@ function QuickInfoSection() {
           border: none;
           color: white;
           padding: 10px 20px;
-          font-size: 14px;
           border-radius: 999px;
-          cursor: pointer;
           font-weight: 600;
+          cursor: pointer;
           transition: 0.2s;
         }
 
         .order-btn:hover {
           transform: scale(1.05);
         }
-
-        @media (max-width: 600px) {
-          .quick-title {
-            font-size: 24px;
-          }
-
-          .quick-card {
-            padding: 16px;
-          }
-
-          .quick-card-title {
-            font-size: 16px;
-          }
-
-          .quick-card-about {
-            font-size: 13px;
-          }
-        }
       `}</style>
 
-      <div className="quick-title">Quick Info</div>
+      <div className="quick-title">Order Prints</div>
 
       <div className="card-container">
         {mediaItems.map((item, idx) => (
           <div className="quick-card" key={idx}>
-            <img src={item.src} alt={item.title} className="quick-image" />
+            <div className="image-frame">
+              <img src={item.src} alt={item.title} className="quick-image" />
+            </div>
 
             <div className="quick-card-title">{item.title}</div>
-
             <div className="quick-card-about">{item.about}</div>
 
-            <button
-              className="order-btn"
-              onClick={() => handleOrderNow(item.link)}
-            >
+            <button className="order-btn" onClick={() => handleOrderNow(item)}>
               Order Now
             </button>
           </div>
