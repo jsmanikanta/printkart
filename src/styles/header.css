@@ -65,8 +65,8 @@
 }
 
 .pk-help-icon {
-  width: 50px;
-  height: 50px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
   display: block;
   flex-shrink: 0;
@@ -109,15 +109,15 @@
     height: 20px;
   }
 
-  /* .pk-help-icon {
-    width: 22px;
-    height: 22px;
-  } */
   .pk-cart-icon {
     width: 18px;
     height: 18px;
   }
 
+.pk-help-icon {
+    width: 18px;
+    height: 18px;
+  }
   .pk-login-text,
   .pk-help-text,
   .pk-cart-text {
