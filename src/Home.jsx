@@ -4,9 +4,10 @@ function QuickInfoSection() {
   const navigate = useNavigate();
   const mediaItems = [
     {
-      src: "/images/prices.jpeg",
-      title: "Price List",
-      about: "Detailed print & binding prices",
+      src: "/images/printkart_poster.jpeg",
+      title: "PrintKart – All-in-One Printing",
+      about:
+        "Posters, Flyers, Polaroids & Bindings at best prices also 15% student offer + classroom delivery.",
       link: "/order-prints",
       isInternal: true,
     },
@@ -41,6 +42,14 @@ function QuickInfoSection() {
         "Beautiful photo frames starting at just ₹99 — turn your memories into aesthetic wall decor. Combo offer available for just ₹169!",
       link: "https://www.instagram.com/print_kart0001/",
       isInternal: false,
+    },
+    // this must be the last one printkart_poster
+    {
+      src: "/images/prices.jpeg",
+      title: "Price List",
+      about: "Detailed prints & binding prices",
+      link: "/order-prints",
+      isInternal: true,
     },
   ];
 

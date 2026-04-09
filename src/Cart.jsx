@@ -25,6 +25,7 @@ function CartMobile() {
 
       if (!token) {
         setLoading(false);
+        navigate("/login")
         return;
       }
 
