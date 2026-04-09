@@ -16,7 +16,6 @@ import PickupAddress from "./Getlocations";
 import Settings from "./Settings";
 import AdminPrints from "./AdminPrints";
 import StudentInformation from "./Studentinfo";
-import Wishlist from "./Wishlist";
 import FAQ from "./Faq";
 
 function App() {
@@ -36,7 +35,6 @@ function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="/student-details" element={<StudentInformation />} />
         <Route path="/faq" element={<FAQ />} />
-        <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/admin" element={<AdminPrints />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -34,11 +34,19 @@ function QuickInfoSection() {
       link: "https://www.instagram.com/print_kart0001/",
       isInternal: false,
     },
+    {
+      src: "/images/frames.jpeg",
+      title: "Photo Frames Offer",
+      about:
+        "Beautiful photo frames starting at just ₹99 — turn your memories into aesthetic wall decor. Combo offer available for just ₹169!",
+      link: "https://www.instagram.com/print_kart0001/",
+      isInternal: false,
+    },
   ];
 
   const handleOrderNow = (item) => {
     if (item.isInternal) {
-      navigate(item.link); // ✅ CORRECT
+      navigate(item.link);
     } else {
       const newWindow = window.open(item.link, "_blank");
       if (newWindow) newWindow.opener = null;

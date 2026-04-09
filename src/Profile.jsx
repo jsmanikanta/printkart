@@ -61,7 +61,7 @@ export default function Profile() {
   }, [navigate]);
 
   const goToPickupAddress = () => navigate("/mylocations");
-  const goTocart = () => navigate("/wishlist");
+  const goTocart = () => window.open(`https://mybookhub.store/wishlist`);
   const goToFaq = () => navigate("/faq");
   const goToSettings = () => navigate("/settings");
   const goToStudentDetails = () => navigate("/student-details");
