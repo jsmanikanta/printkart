@@ -44,10 +44,8 @@
 .pk-help-section,
 .pk-cart-section {
   display: flex;
-  flex-direction: column;   
-  align-items: center;     
-  justify-content: center;
-  gap: 4px;
+  align-items: center;
+  gap: 7px;
   cursor: pointer;
 }
 

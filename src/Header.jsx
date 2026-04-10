@@ -55,7 +55,7 @@ function Header() {
               <img src="/images/user-avatar.png" alt="User" />
             </div>
             <span className="pk-login-text">
-              {userName ? userName : "Login"}
+              {userName ? userName.split(" ")[0] : "Login"}
             </span>
           </div>
 
