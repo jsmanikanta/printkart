@@ -16,7 +16,7 @@ function QuickInfoSection() {
       title: "Polaroids at PrintKart",
       about:
         "Turn your memories into beautiful polaroids — choose your size and get them delivered hassle-free",
-      link: "https://www.instagram.com/print_kart0001/",
+      link: "https://form.jotform.com/261114021639043",
       isInternal: false,
     },
     {
@@ -32,7 +32,7 @@ function QuickInfoSection() {
       title: "Mini Polaroids Offer",
       about:
         "Get 35 mini polaroids for just ₹99 — capture your beautiful memories in a cute aesthetic way.",
-      link: "https://www.instagram.com/print_kart0001/",
+      link: "https://form.jotform.com/261114021639043",
       isInternal: false,
     },
     {
