@@ -17,6 +17,7 @@ import Settings from "./Settings";
 import AdminPrints from "./AdminPrints";
 import StudentInformation from "./Studentinfo";
 import FAQ from "./Faq";
+import PrivacyPolicy from "./PrivacyPolicy";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/admin" element={<AdminPrints />} />
         <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy/>}/>
       </Routes>
       <Footer />
     </>

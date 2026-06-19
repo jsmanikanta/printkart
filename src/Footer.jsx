@@ -9,68 +9,105 @@ function Footer() {
 
   return (
     <footer className="footer">
-      <div className="footer-content">
-        <div className="footer-section">
-          <h4>PrintKart</h4>
+      <div className="footer-container">
+        {/* About */}
+        <div className="footer-section footer-about">
+          <h2>PrintKart</h2>
+
           <p>
-            PrintKart makes printing simple, fast, and convenient for students. You can upload your documents online, select your preferred print options such as black & white or color, and get high-quality printouts without waiting in long queues. It is designed to save time and provide reliable printing for assignments, notes, project reports, and study materials, making the entire printing process smooth, affordable, and hassle-free for students.
+            PrintKart is a student-focused online printing platform that allows
+            users to upload documents, customize print settings, and receive
+            high-quality printouts quickly and affordably. We simplify printing
+            assignments, notes, project reports, and study materials.
           </p>
         </div>
 
-        {/* Print Categories */}
+        {/* Services */}
         <div className="footer-section">
-          <h4>Printouts</h4>
-          <ul className="footer-links">
-            <li onClick={orderprints}>Assignments</li>
-            <li onClick={orderprints}>Project Reports</li>
-            <li onClick={orderprints}>Class Notes</li>
-            <li onClick={orderprints}>College Notices / PDFs</li>
-            <li onClick={orderprints}>Spiral Bindings</li>
-            <li onClick={orderprints}>Black & White / Color Prints</li>
-          </ul>
+          <h3>Print Services</h3>
+
+          <p className="footer-link" onClick={orderprints}>
+            Assignments →
+          </p>
+
+          <p className="footer-link" onClick={orderprints}>
+            Project Reports →
+          </p>
+
+          <p className="footer-link" onClick={orderprints}>
+            Class Notes →
+          </p>
+
+          <p className="footer-link" onClick={orderprints}>
+            Spiral Binding →
+          </p>
+
+          <p className="footer-link" onClick={orderprints}>
+            Black & White Prints →
+          </p>
+
+          <p className="footer-link" onClick={orderprints}>
+            Color Prints →
+          </p>
         </div>
 
         {/* Contact */}
         <div className="footer-section">
-          <h4>Contact</h4>
+          <h3>Contact</h3>
 
           <p>
-            Email: 
+            📧
             <a href="mailto:support@mybookhub.store">support@mybookhub.store</a>
           </p>
 
-          <div>
-            <p>
-              Chat with Us: 
-              <a
+          <p>
+            💬
+            <a
               href="https://wa.me/919182415750"
-              className="whatsapp-contact"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noreferrer"
             >
-               WhatsApp
+              WhatsApp Support
             </a>
-            </p>
-          </div>
-
-          <p>
-            Phone: 
-            <a href="tel:+918074177294"> 8074177294</a>
-          </p>
-          <p>
-            Instagram:
-            <a href="https://www.instagram.com/print_kart0001/">printkat0001</a>
           </p>
 
           <p>
-            Support: 
-            <a href="tel:+919182415750"> 9182415750</a>
+            📞
+            <a href="tel:+918074177294">8074177294</a>
+          </p>
+
+          <p>
+            📷
+            <a
+              href="https://www.instagram.com/print_kart0001/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              @print_kart0001
+            </a>
+          </p>
+
+          <p
+            className="footer-link"
+            onClick={() => navigate("/privacy-policy")}
+          >
+            Privacy Policy
+          </p>
+
+          <p
+            className="footer-link"
+            onClick={() => navigate("/terms-and-conditions")}
+          >
+            Terms & Conditions
           </p>
         </div>
       </div>
 
+      <div className="footer-divider"></div>
+
       <div className="footer-bottom">
-        <p>© 2026 PrintKart</p>
+        <p>© 2026 PrintKart. All Rights Reserved.</p>
+        <p>Made with ❤️ for Students.</p>
       </div>
     </footer>
   );
