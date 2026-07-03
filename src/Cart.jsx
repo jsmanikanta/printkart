@@ -19,13 +19,16 @@ function CartMobile() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("[printkart:Cart] Loading print orders");
+
     const fetchUserProfile = async () => {
       setLoading(true);
       const token = localStorage.getItem("token");
 
       if (!token) {
+        console.log("[printkart:Cart] No token found, redirecting to login");
         setLoading(false);
-        navigate("/login")
+        navigate("/login");
         return;
       }
 
@@ -37,12 +40,15 @@ function CartMobile() {
         if (response.data?.user) {
           setUser(response.data.user);
           setOrders(response.data.orders || []);
+          console.log("[printkart:Cart] Print orders loaded", {
+            totalOrders: (response.data.orders || []).length,
+          });
         } else {
           setUser(null);
           setOrders([]);
         }
       } catch (error) {
-        console.error("Login again", error);
+        console.log("[printkart:Cart] Print order load failed", error);
         setUser(null);
         setOrders([]);
         localStorage.removeItem("token");
@@ -125,7 +131,11 @@ function CartMobile() {
   };
 
   const canCancelOrder = (order) => {
-    return String(order?.status || "").trim().toLowerCase() === "order placed";
+    return (
+      String(order?.status || "")
+        .trim()
+        .toLowerCase() === "order placed"
+    );
   };
 
   const handleAskCancel = (orderId, e) => {
@@ -142,6 +152,8 @@ function CartMobile() {
   const handleCancelOrder = async (orderId, e) => {
     e.stopPropagation();
 
+    console.log("[printkart:Cart] Cancel order requested", { orderId });
+
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
@@ -157,7 +169,7 @@ function CartMobile() {
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       const updatedOrder = response?.data?.order;
@@ -166,8 +178,8 @@ function CartMobile() {
         prev.map((item) =>
           (item._id || item.id) === orderId
             ? { ...item, ...(updatedOrder || {}), status: "Cancelled" }
-            : item
-        )
+            : item,
+        ),
       );
 
       setSelectedOrder((prev) => {
@@ -179,10 +191,10 @@ function CartMobile() {
       setConfirmOrderId(null);
       setMessage(response?.data?.message || "Order cancelled successfully");
     } catch (error) {
-      console.error("Cancel order error:", error);
+      console.log("[printkart:Cart] Cancel order error", error);
       setMessage(
         error?.response?.data?.message ||
-          "Unable to cancel order. Please try again."
+          "Unable to cancel order. Please try again.",
       );
     } finally {
       setCancellingOrderId(null);
@@ -287,7 +299,9 @@ function CartMobile() {
                                   onClick={(e) => handleCancelOrder(orderId, e)}
                                   disabled={isCancelling}
                                 >
-                                  {isCancelling ? "Cancelling..." : "Yes, Cancel"}
+                                  {isCancelling
+                                    ? "Cancelling..."
+                                    : "Yes, Cancel"}
                                 </button>
 
                                 <button
@@ -519,9 +533,7 @@ function CartMobile() {
 
           {canCancelOrder(selectedOrder) && selectedIsConfirming && (
             <div className="cart-cancel-confirm-box">
-              <div className="cart-cancel-confirm-text">
-                Cancel this order?
-              </div>
+              <div className="cart-cancel-confirm-text">Cancel this order?</div>
 
               <div className="cart-cancel-confirm-actions">
                 <button

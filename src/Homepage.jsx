@@ -33,15 +33,18 @@ function HomePage() {
     navigate("/sellbooks");
   };
 
-  const previous=()=>{
-    navigate("/previous-papers")
-  }
+  const previous = () => {
+    navigate("/previous-papers");
+  };
   // Fetch user profile for the header
   useEffect(() => {
+    console.log("[printkart:Homepage] Loading homepage state");
+
     const fetchUserProfile = async () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       if (!token) {
+        console.log("[printkart:Homepage] No token found");
         setLoading(false);
         return;
       }
@@ -53,9 +56,12 @@ function HomePage() {
         });
         if (response.data && response.data.user) {
           setUserName(response.data.user.fullname);
+          console.log("[printkart:Homepage] Profile loaded", {
+            userName: response.data.user.fullname || "",
+          });
         }
       } catch (error) {
-        console.error("Login again", error);
+        console.log("[printkart:Homepage] Profile load failed", error);
       } finally {
         setLoading(false);
       }

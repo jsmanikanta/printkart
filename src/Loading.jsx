@@ -2,6 +2,8 @@ import React from "react";
 import "./styles/loading.css";
 
 const Loader = () => {
+  console.log("[printkart:Loading] Rendered");
+
   return (
     <div className="loader-overlay">
       <div className="loader-wrapper">

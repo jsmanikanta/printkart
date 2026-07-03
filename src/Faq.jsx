@@ -3,6 +3,8 @@ import "./styles/faq.css";
 import { useNavigate } from "react-router-dom";
 
 export default function FAQ() {
+  console.log("[printkart:Faq] Rendered");
+
   const faqs = [
     {
       question: "What is MyBookHub ?",
@@ -66,6 +68,7 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState(0);
   const navigate = useNavigate();
   const toggle = (idx) => {
+    console.log("[printkart:Faq] Toggle question", { idx });
     setOpenIndex((prev) => (prev === idx ? -1 : idx));
   };
 
@@ -74,7 +77,13 @@ export default function FAQ() {
       <div className="faq-card">
         <div className="faq-header">
           <div className="faq-header-top">
-            <span className="back-arrow" onClick={() => navigate(-1)}>
+            <span
+              className="back-arrow"
+              onClick={() => {
+                console.log("[printkart:Faq] Navigate back");
+                navigate(-1);
+              }}
+            >
               ←
             </span>
 

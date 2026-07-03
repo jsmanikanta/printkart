@@ -1,27 +1,33 @@
 import React from "react";
-import "./styles/settings.css"
+import "./styles/settings.css";
 import { useNavigate } from "react-router-dom";
 
 export default function Settings() {
   const navigate = useNavigate();
 
+  console.log("[printkart:Settings] Rendered");
+
   // Back button
   const handleBack = () => {
+    console.log("[printkart:Settings] Navigate back");
     navigate(-1);
   };
 
   // Change Password navigation
   const handleChangePassword = () => {
+    console.log("[printkart:Settings] Open change password");
     navigate("/forgotpassword");
   };
 
   // Student Information navigation
   const handleStudentInfo = () => {
+    console.log("[printkart:Settings] Open student information");
     navigate("/student-details");
   };
 
   // Logout navigation
   const handleLogout = () => {
+    console.log("[printkart:Settings] Logout requested");
     localStorage.removeItem("token");
     navigate("/");
     window.location.reload();

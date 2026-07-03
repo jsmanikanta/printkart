@@ -2,6 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 function QuickInfoSection() {
   const navigate = useNavigate();
+  React.useEffect(() => {
+    console.log("[printkart:Home] Rendered");
+  }, []);
+
   const mediaItems = [
     {
       src: "/images/printkart_poster.jpeg",
@@ -54,6 +58,11 @@ function QuickInfoSection() {
   ];
 
   const handleOrderNow = (item) => {
+    console.log("[printkart:Home] Order button clicked", {
+      title: item.title,
+      isInternal: item.isInternal,
+    });
+
     if (item.isInternal) {
       navigate(item.link);
     } else {

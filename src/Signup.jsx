@@ -16,6 +16,10 @@ function Signup() {
   };
   const [loading, setLoading] = useState(false);
 
+  React.useEffect(() => {
+    console.log("[printkart:Signup] Rendered");
+  }, []);
+
   const [inputs, setInputs] = useState({
     fullname: "",
     mobileNumber: "",
@@ -31,6 +35,12 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    console.log("[printkart:Signup] Submit requested", {
+      fullname: inputs.fullname,
+      mobileNumber: inputs.mobileNumber,
+      email: inputs.email,
+    });
 
     const mobileNumberPattern = /^\d{10}$/;
     if (!mobileNumberPattern.test(inputs.mobileNumber)) {
@@ -55,12 +65,17 @@ function Signup() {
         birthday: inputs.birthday ? inputs.birthday : undefined,
       });
 
+      console.log("[printkart:Signup] Registration response received", {
+        success: Boolean(response.data?.message),
+      });
+
       if (response.data.message) {
         navigate("/login");
       } else {
         alert("Registration failed. Please try again.");
       }
     } catch (error) {
+      console.log("[printkart:Signup] Registration failed", error);
       const errorMsg =
         error.response?.data?.error || "Registration failed. Please try again.";
       alert(errorMsg);

@@ -22,6 +22,10 @@ export default function Addlocation() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  useEffect(() => {
+    console.log("[printkart:Addlocation] Rendered");
+  }, []);
   useEffect(() => {
     const pin = form.pincode?.trim();
     if (!/^\d{6}$/.test(pin)) {
@@ -33,6 +37,7 @@ export default function Addlocation() {
       setPinLoading(true);
       setErrorMsg("");
       setSuccessMsg("");
+      console.log("[printkart:Addlocation] Pincode lookup started", { pin });
       try {
         const res = await axios.get(
           `https://api.postalpincode.in/pincode/${pin}`,
@@ -44,17 +49,24 @@ export default function Addlocation() {
         const po = item?.PostOffice?.[0];
 
         if (item?.Status === "Success" && po?.State && po?.District) {
+          console.log("[printkart:Addlocation] Pincode lookup succeeded", {
+            pin,
+            state: po.State,
+            district: po.District,
+          });
           setForm((prev) => ({
             ...prev,
             state: po.State,
             district: po.District,
           }));
         } else {
+          console.log("[printkart:Addlocation] Invalid pincode", { pin });
           setForm((prev) => ({ ...prev, state: "", district: "" }));
           setErrorMsg("Invalid pincode.");
         }
       } catch (e) {
         if (!alive) return;
+        console.log("[printkart:Addlocation] Pincode lookup failed", e);
         setForm((prev) => ({ ...prev, state: "", district: "" }));
         setErrorMsg("Failed to detect state/district from pincode.");
       } finally {
@@ -94,6 +106,12 @@ export default function Addlocation() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("[printkart:Addlocation] Submit requested", {
+      name: form.name,
+      mobilenumber: form.mobilenumber,
+      pincode: form.pincode,
+    });
+
     const msg = validate();
     if (msg) {
       setErrorMsg(msg);
@@ -121,8 +139,14 @@ export default function Addlocation() {
         },
       );
 
-      navigate("/mylocations", { replace: true },600);
+      console.log("[printkart:Addlocation] Location saved", {
+        name: form.name,
+        pincode: form.pincode,
+      });
+
+      navigate("/mylocations", { replace: true }, 600);
     } catch (err) {
+      console.log("[printkart:Addlocation] Submit failed", err);
       setErrorMsg(err?.response?.data?.error || "Failed to add location.");
     } finally {
       setSubmitLoading(false);

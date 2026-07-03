@@ -13,7 +13,10 @@ export default function PickupAddress() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const fetchLocations = useCallback(async () => {
+    console.log("[printkart:Getlocations] Fetch requested");
+
     if (!token) {
+      console.log("[printkart:Getlocations] No token found");
       setLoading(false);
       setErrorMsg("Please login to view addresses.");
       setUser(null);
@@ -33,7 +36,13 @@ export default function PickupAddress() {
       if (!alive) return;
 
       const fetchedUser = res?.data?.user || null;
-      const list = Array.isArray(res?.data?.locations) ? res.data.locations : [];
+      const list = Array.isArray(res?.data?.locations)
+        ? res.data.locations
+        : [];
+
+      console.log("[printkart:Getlocations] Locations loaded", {
+        totalLocations: list.length,
+      });
 
       setUser(fetchedUser);
       setLocations(list);
@@ -44,6 +53,8 @@ export default function PickupAddress() {
       });
     } catch (err) {
       if (!alive) return;
+
+      console.log("[printkart:Getlocations] Fetch failed", err);
 
       const msg =
         err?.response?.data?.error ||
@@ -74,8 +85,16 @@ export default function PickupAddress() {
   }, [fetchLocations]);
 
   const formatAddress = (loc) => {
-    const parts = [loc?.address, loc?.landmark, loc?.district, loc?.state, loc?.pincode]
-      .map((x) => (typeof x === "string" ? x.trim() : x != null ? String(x).trim() : ""))
+    const parts = [
+      loc?.address,
+      loc?.landmark,
+      loc?.district,
+      loc?.state,
+      loc?.pincode,
+    ]
+      .map((x) =>
+        typeof x === "string" ? x.trim() : x != null ? String(x).trim() : "",
+      )
       .filter(Boolean);
 
     return parts.join(", ");

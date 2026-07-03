@@ -15,12 +15,18 @@ export default function ForgotPassword() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  React.useEffect(() => {
+    console.log("[printkart:Forgotpass] Rendered");
+  }, []);
+
   const goToLogin = () => navigate("/login");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    console.log("[printkart:Forgotpass] Reset requested", { identifier });
 
     if (!identifier || !newPassword || !confirm) {
       setError("All fields are required.");
@@ -46,6 +52,9 @@ export default function ForgotPassword() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unknown error");
 
+      console.log("[printkart:Forgotpass] Password reset successful", {
+        identifier,
+      });
       setSuccess("Password reset successful!");
       setIdentifier("");
       setNewPassword("");
@@ -53,6 +62,7 @@ export default function ForgotPassword() {
 
       setTimeout(() => navigate("/login"), 1000);
     } catch (err) {
+      console.log("[printkart:Forgotpass] Reset failed", err);
       setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);

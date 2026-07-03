@@ -5,6 +5,8 @@ import "./styles/footer.css";
 function Footer() {
   const navigate = useNavigate();
 
+  console.log("[printkart:Footer] Rendered");
+
   const orderprints = () => navigate("/orderprints");
 
   return (

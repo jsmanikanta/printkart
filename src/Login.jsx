@@ -15,6 +15,8 @@ function Login() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
+    console.log("[printkart:Login] Rendered");
+
     const token = localStorage.getItem("token");
     if (token) navigate("/profile", { replace: true });
   }, [navigate]);
@@ -30,6 +32,11 @@ function Login() {
 
     const credential = inputs.credential.trim();
     const password = inputs.password;
+
+    console.log("[printkart:Login] Submit requested", {
+      credential,
+      hasPassword: Boolean(password),
+    });
 
     if (!credential || !password) {
       setErrorMsg("Please enter your email/mobile and password.");
@@ -52,14 +59,19 @@ function Login() {
 
       if (data?.success && data?.token) {
         localStorage.setItem("token", data.token);
+        console.log("[printkart:Login] Login successful", {
+          hasUser: Boolean(data?.user),
+        });
         navigate("/", { replace: true });
 
         // Then force full reload
         window.location.reload();
       } else {
+        console.log("[printkart:Login] Login failed response", data);
         setErrorMsg(data?.error || "Login failed. Please try again.");
       }
     } catch (err) {
+      console.log("[printkart:Login] Login request failed", err);
       const msg =
         err?.response?.data?.error ||
         err?.response?.data?.message ||

@@ -20,6 +20,8 @@ import FAQ from "./Faq";
 import PrivacyPolicy from "./PrivacyPolicy";
 
 function App() {
+  console.log("[printkart:App] Rendered");
+
   return (
     <>
       <Header />
@@ -38,7 +40,7 @@ function App() {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/admin" element={<AdminPrints />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy/>}/>
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       </Routes>
       <Footer />
     </>

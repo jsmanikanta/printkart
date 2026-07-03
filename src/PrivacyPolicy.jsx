@@ -2,6 +2,8 @@ import React from "react";
 import "./styles/privacy.css";
 
 const PrivacyPolicy = () => {
+  console.log("[printkart:PrivacyPolicy] Rendered");
+
   return (
     <div className="pk-privacy-page">
       <div className="pk-privacy-card">
@@ -137,7 +139,6 @@ const PrivacyPolicy = () => {
           <p>
             <strong>Email:</strong> support@mybookhub.store
           </p>
-
         </section>
       </div>
     </div>

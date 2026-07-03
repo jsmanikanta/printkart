@@ -14,7 +14,7 @@ const STATUS_OPTIONS = [
   "Cancelled",
 ];
 
-const PAYMENT_STATUS_OPTIONS = ["pending", "paid", "failed","refunded"];
+const PAYMENT_STATUS_OPTIONS = ["pending", "paid", "failed", "refunded"];
 
 export default function AdminPrints() {
   const navigate = useNavigate();
@@ -31,8 +31,14 @@ export default function AdminPrints() {
   const ADMIN_PASSWORD = "Ayush@5121";
 
   const fetchOrders = async () => {
+    console.log("[printkart:AdminPrints] Loading print orders");
     const response = await axios.get(`${api_path}/admin/printorders`);
     setOrders(Array.isArray(response.data?.orders) ? response.data.orders : []);
+    console.log("[printkart:AdminPrints] Print orders loaded", {
+      totalOrders: Array.isArray(response.data?.orders)
+        ? response.data.orders.length
+        : 0,
+    });
   };
 
   const goToBooks = () => {
@@ -44,6 +50,7 @@ export default function AdminPrints() {
     setErrorMsg("");
 
     if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+      console.log("[printkart:AdminPrints] Invalid admin credentials");
       setErrorMsg("Invalid username or password");
       return;
     }
@@ -52,7 +59,9 @@ export default function AdminPrints() {
       setLoading(true);
       await fetchOrders();
       setViewingOrders(true);
+      console.log("[printkart:AdminPrints] Admin login successful");
     } catch (error) {
+      console.log("[printkart:AdminPrints] Failed to fetch orders", error);
       setErrorMsg(error.response?.data?.error || "Failed to fetch orders.");
     } finally {
       setLoading(false);
@@ -93,6 +102,13 @@ export default function AdminPrints() {
     try {
       setLoading(true);
 
+      console.log("[printkart:AdminPrints] Save requested", {
+        orderId,
+        status: selectedStatus,
+        paymentStatus: selectedPaymentStatus,
+        discountprice: selectedDiscountPrice,
+      });
+
       await axios.put(`${api_path}/admin/update-status/${orderId}`, {
         status: selectedStatus,
         discountprice:
@@ -107,6 +123,8 @@ export default function AdminPrints() {
         paymentStatus: selectedPaymentStatus,
       });
 
+      console.log("[printkart:AdminPrints] Save successful", { orderId });
+
       await fetchOrders();
 
       setEditStates((prev) => {
@@ -115,6 +133,7 @@ export default function AdminPrints() {
         return next;
       });
     } catch (error) {
+      console.log("[printkart:AdminPrints] Save failed", error);
       alert(
         error.response?.data?.error ||
           error.response?.data?.message ||
@@ -133,6 +152,7 @@ export default function AdminPrints() {
   };
 
   const handleLogout = () => {
+    console.log("[printkart:AdminPrints] Logout requested");
     setViewingOrders(false);
     setUserName("");
     setPassword("");

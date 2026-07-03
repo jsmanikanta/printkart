@@ -156,6 +156,12 @@ export default function OrderPrints() {
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+  useEffect(() => {
+    console.log("[printkart:OrderPrints] Component mounted", {
+      activeTab,
+    });
+  }, []);
+
   const availableSidesOptions = useMemo(() => {
     if (color === "colour") {
       return [{ value: "1", label: "Single Side" }];
@@ -175,11 +181,13 @@ export default function OrderPrints() {
 
       if (!API) {
         setProfileLoading(false);
+        console.log("[printkart:OrderPrints] API base missing");
         return;
       }
 
       if (!freshToken) {
         setProfileLoading(false);
+        console.log("[printkart:OrderPrints] No token found");
         return;
       }
 
@@ -229,8 +237,13 @@ export default function OrderPrints() {
         if (userType.includes("student")) {
           setActiveTab("student");
         }
+
+        console.log("[printkart:OrderPrints] Profile loaded", {
+          hasName: Boolean(fullName),
+          userType,
+        });
       } catch (error) {
-        console.error("Profile fetch error:", error);
+        console.log("[printkart:OrderPrints] Profile fetch error", error);
       } finally {
         setProfileLoading(false);
       }
@@ -252,8 +265,12 @@ export default function OrderPrints() {
         const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
         setPages(pdf.numPages);
         setPdfError("");
+        console.log("[printkart:OrderPrints] PDF parsed", {
+          fileName: file.name,
+          pages: pdf.numPages,
+        });
       } catch (error) {
-        console.error("PDF read error:", error);
+        console.log("[printkart:OrderPrints] PDF read error", error);
         setPages(0);
         setPdfError("Invalid or corrupted PDF file");
       }
@@ -323,6 +340,11 @@ export default function OrderPrints() {
     const uploaded = e.target.files?.[0];
     setSubmitError("");
 
+    console.log("[printkart:OrderPrints] File selected", {
+      hasFile: Boolean(uploaded),
+      fileName: uploaded?.name || "",
+    });
+
     if (!uploaded) {
       setFile(null);
       setPages(0);
@@ -353,6 +375,10 @@ export default function OrderPrints() {
       navigate("/login");
       return;
     }
+
+    console.log("[printkart:OrderPrints] Coupon apply requested", {
+      couponCode,
+    });
 
     if (!couponCode.trim()) {
       setCouponInfo({ type: "error", message: "Please enter coupon code" });
@@ -396,8 +422,12 @@ export default function OrderPrints() {
         type: "success",
         message: `Coupon applied successfully. Discount: ₹${rawDiscount}`,
       });
+      console.log("[printkart:OrderPrints] Coupon applied", {
+        couponCode,
+        discount: rawDiscount,
+      });
     } catch (error) {
-      console.error("Coupon error:", error);
+      console.log("[printkart:OrderPrints] Coupon error", error);
       setCouponDiscountValue(0);
       setCouponInfo({
         type: "error",
@@ -463,7 +493,7 @@ export default function OrderPrints() {
     }
 
     const url = `${API}/orders/orderprints`;
-    console.log("Calling create print order URL:", url);
+    console.log("[printkart:OrderPrints] Creating print order", { url });
 
     const res = await fetch(url, {
       method: "POST",
@@ -474,7 +504,10 @@ export default function OrderPrints() {
     });
 
     const data = await parseResponseSafely(res);
-    console.log("Create print order response:", { status: res.status, data });
+    console.log("[printkart:OrderPrints] Create print order response", {
+      status: res.status,
+      data,
+    });
 
     if (!res.ok || !data?.success) {
       throw new Error(getReadableError(data, "Order failed order again"));
@@ -493,9 +526,11 @@ export default function OrderPrints() {
     const url = `${API}/payments/create-order`;
     const payload = { printOrderId };
 
-    console.log("Calling Razorpay create-order URL:", url);
-    console.log("Razorpay create-order payload:", payload);
-    console.log("Frontend API base:", API);
+    console.log("[printkart:OrderPrints] Starting Razorpay order creation", {
+      url,
+      payload,
+      apiBase: API,
+    });
 
     const res = await fetch(url, {
       method: "POST",
@@ -508,7 +543,7 @@ export default function OrderPrints() {
 
     const data = await parseResponseSafely(res);
 
-    console.log("Razorpay create-order browser response:", {
+    console.log("[printkart:OrderPrints] Razorpay create-order response", {
       status: res.status,
       ok: res.ok,
       data,
@@ -581,7 +616,7 @@ export default function OrderPrints() {
         }),
       });
     } catch (error) {
-      console.error("payment-failed update error:", error);
+      console.log("[printkart:OrderPrints] payment-failed update error", error);
     }
   };
 
@@ -634,7 +669,7 @@ export default function OrderPrints() {
                   status: "cancelled",
                 });
               } catch (err) {
-                console.error("Cancel API error:", err);
+                console.log("[printkart:OrderPrints] Cancel API error", err);
               }
 
               reject(new Error("Payment cancelled"));
@@ -653,7 +688,10 @@ export default function OrderPrints() {
 
         // 🔥 Payment failure handler
         razorpay.on("payment.failed", async (response) => {
-          console.error("Razorpay payment.failed:", response);
+          console.log(
+            "[printkart:OrderPrints] Razorpay payment.failed",
+            response,
+          );
 
           try {
             await markPaymentFailed({
@@ -663,7 +701,7 @@ export default function OrderPrints() {
               reason: response?.error?.description,
             });
           } catch (err) {
-            console.error("Failure API error:", err);
+            console.log("[printkart:OrderPrints] Failure API error", err);
           }
 
           reject(
@@ -687,6 +725,12 @@ export default function OrderPrints() {
 
     setSubmitError("");
 
+    console.log("[printkart:OrderPrints] Submit requested", {
+      activeTab,
+      pages,
+      paymentMethod,
+    });
+
     const error = validateForm();
     if (error) {
       setSubmitError(error);
@@ -702,9 +746,12 @@ export default function OrderPrints() {
         await openRazorpay(order);
       }
 
+      console.log("[printkart:OrderPrints] Order flow completed", {
+        paymentMethod,
+      });
       navigate("/prints-cart");
     } catch (error) {
-      console.error("Order submit error:", error);
+      console.log("[printkart:OrderPrints] Order submit error", error);
       setSubmitError(error?.message || "Failed to place order");
     } finally {
       setLoading(false);

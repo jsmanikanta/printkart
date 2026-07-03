@@ -30,10 +30,13 @@ export default function StudentInformation() {
   const UPDATE_URL = `${api_path}/user/profile/update`;
 
   useEffect(() => {
+    console.log("[printkart:Studentinfo] Loading profile");
+
     const fetchProfile = async () => {
       if (!token) {
         setLoading(false);
         setErrorMsg("Please login to view student information.");
+        console.log("[printkart:Studentinfo] No token found");
         return;
       }
 
@@ -57,7 +60,9 @@ export default function StudentInformation() {
 
         setForm(initial);
         setOriginal(initial);
+        console.log("[printkart:Studentinfo] Profile loaded");
       } catch (err) {
+        console.log("[printkart:Studentinfo] Profile load failed", err);
         setErrorMsg(
           err?.response?.data?.error ||
             "Unable to load student information (check GET profile API).",
@@ -78,12 +83,14 @@ export default function StudentInformation() {
   };
 
   const handleEdit = () => {
+    console.log("[printkart:Studentinfo] Edit mode enabled");
     setIsEdit(true);
     setSuccessMsg("");
     setErrorMsg("");
   };
 
   const handleCancel = () => {
+    console.log("[printkart:Studentinfo] Edit cancelled");
     if (original) setForm(original);
     setIsEdit(false);
     setSuccessMsg("");
@@ -96,6 +103,13 @@ export default function StudentInformation() {
       setErrorMsg("Please login again.");
       return;
     }
+
+    console.log("[printkart:Studentinfo] Save requested", {
+      college: form.college,
+      year: form.year,
+      branch: form.branch,
+      rollno: form.rollno,
+    });
 
     setSaving(true);
     setErrorMsg("");
@@ -128,8 +142,10 @@ export default function StudentInformation() {
       setForm(updated);
       setOriginal(updated);
       setIsEdit(false);
-      setSuccessMsg("Updated successfully!",);
+      setSuccessMsg("Updated successfully!");
+      console.log("[printkart:Studentinfo] Save successful");
     } catch (err) {
+      console.log("[printkart:Studentinfo] Save failed", err);
       setErrorMsg(err?.response?.data?.error || "Update failed");
     } finally {
       setSaving(false);

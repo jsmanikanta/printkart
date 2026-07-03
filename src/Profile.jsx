@@ -13,10 +13,13 @@ export default function Profile() {
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
+    console.log("[printkart:Profile] Loading profile");
+
     const fetchUserProfile = async () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
+        console.log("[printkart:Profile] No token found, redirecting to login");
         setRedirecting(true);
         setLoading(false);
         navigate("/login", { replace: true });
@@ -33,8 +36,13 @@ export default function Profile() {
         const u = response?.data;
 
         if (u && u._id) {
+          console.log("[printkart:Profile] Profile loaded", {
+            userId: u._id,
+            email: u.email || "",
+          });
           setUser(u);
         } else {
+          console.log("[printkart:Profile] Invalid profile response", u);
           localStorage.removeItem("token");
           setUser(null);
           setRedirecting(true);
@@ -42,7 +50,7 @@ export default function Profile() {
           return;
         }
       } catch (err) {
-        console.log("Profile fetch error:", err);
+        console.log("[printkart:Profile] Profile fetch error", err);
 
         if (err?.response?.status === 401 || err?.response?.status === 403) {
           localStorage.removeItem("token");

@@ -14,10 +14,13 @@ function Header() {
   const goToHelp = () => navigate("/order-prints");
 
   useEffect(() => {
+    console.log("[printkart:Header] Loading header data");
+
     const fetchUserProfile = async () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
+        console.log("[printkart:Header] No token found");
         setUserName(null);
         return;
       }
@@ -31,10 +34,15 @@ function Header() {
           setUserName(
             response.data.user.fullname || response.data.user.name || null,
           );
+          console.log("[printkart:Header] Profile loaded", {
+            userName:
+              response.data.user.fullname || response.data.user.name || null,
+          });
         } else {
           setUserName(null);
         }
       } catch (error) {
+        console.log("[printkart:Header] Header profile load failed", error);
         setUserName(null);
       }
     };
