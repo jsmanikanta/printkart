@@ -1110,17 +1110,14 @@ export default function OrderPrints() {
               className="order-btn"
               type="submit"
               disabled={loading || profileLoading || pages <= 0}
+              style={{ marginTop: 20, width: "100%" }}
             >
-              {loading
-                ? "Processing..."
-                : paymentMethod === "Razorpay"
-                  ? "Pay & Place Order"
-                  : "Place Order"}
+              {loading ? "Processing..." : "Place Print Order"}
             </button>
           </fieldset>
         </form>
-
-        <div className="back-btn-wrapper">
+      </div>
+       <div className="back-btn-wrapper">
           <a href="https://mybookhub.store/" className="back-link">
             <button className="back-btn" type="button">
               Back to MyBookHub
