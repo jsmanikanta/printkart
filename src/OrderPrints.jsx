@@ -319,14 +319,14 @@ export default function OrderPrints() {
     }
 
     const baseTotal = currentPrintCost + currentBindingCost;
-    const autoStudentDiscount =
-      activeTab === "student" && couponDiscountValue <= 0
-        ? currentPrintCost * 0.15
-        : 0;
+    // const autoStudentDiscount =
+    //   activeTab === "student" && couponDiscountValue <= 0
+    //     ? currentPrintCost * 0.15
+    //     : 0;
 
     const finalTotal = Math.max(
       0,
-      baseTotal - autoStudentDiscount - couponDiscountValue,
+      baseTotal /*- autoStudentDiscount*/ - couponDiscountValue,
     );
 
     setPrintCost(Math.ceil(currentPrintCost));
