@@ -152,7 +152,7 @@ export default function OrderPrints() {
   const [bindingCost, setBindingCost] = useState(0);
   const [originalPrice, setOriginalPrice] = useState(0);
   const [discountPrice, setDiscountPrice] = useState(0);
-  const [studentDiscount, setStudentDiscount] = useState(0);
+ // const [studentDiscount, setStudentDiscount] = useState(0);
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -285,7 +285,7 @@ export default function OrderPrints() {
       setBindingCost(0);
       setOriginalPrice(0);
       setDiscountPrice(0);
-      setStudentDiscount(0);
+      //setStudentDiscount(0);
       return;
     }
 
@@ -326,13 +326,13 @@ export default function OrderPrints() {
 
     const finalTotal = Math.max(
       0,
-      baseTotal /*- autoStudentDiscount*/ - couponDiscountValue,
+      baseTotal - couponDiscountValue,
     );
 
     setPrintCost(Math.ceil(currentPrintCost));
     setBindingCost(Math.ceil(currentBindingCost));
     setOriginalPrice(Math.ceil(baseTotal));
-    setStudentDiscount(Math.ceil(autoStudentDiscount));
+    //setStudentDiscount(Math.ceil(autoStudentDiscount));
     setDiscountPrice(Math.ceil(finalTotal));
   }, [color, sides, binding, copies, pages, activeTab, couponDiscountValue]);
 
@@ -1074,9 +1074,9 @@ export default function OrderPrints() {
                   </span>
                 </p>
 
-                {studentDiscount > 0 && (
+                /* {studentDiscount > 0 && (
                   <p>Student Discount on Prints: -₹{studentDiscount}</p>
-                )}
+                )} */
 
                 {couponDiscountValue > 0 && (
                   <p>Coupon Discount: -₹{couponDiscountValue}</p>
