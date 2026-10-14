@@ -1116,9 +1116,9 @@ export default function OrderPrints() {
             </button>
           </fieldset>
         </form>
-      </div>
-       <div className="back-btn-wrapper">
-          <a href="https://mybookhub.store/" className="back-link">
+
+        <div className="back-btn-wrapper" style={{ marginTop: 15, textAlign: "center" }}>
+          <a href="https://mybookhub.store/" className="back-link" style={{ textDecoration: "none" }}>
             <button className="back-btn" type="button">
               Back to MyBookHub
             </button>
