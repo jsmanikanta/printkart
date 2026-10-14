@@ -1066,34 +1066,29 @@ export default function OrderPrints() {
             </div>
 
             {file && pages > 0 && (
-              <div className="total-cost-box">
-                <p>
-                  Original Price: ₹{originalPrice}
-                  <span style={{ fontSize: "smaller", marginLeft: 8 }}>
-                    (Prints ₹{printCost} + Binding ₹{bindingCost})
-                  </span>
-                </p>
+  <div className="total-cost-box">
+    <p>
+      Original Price: ₹{originalPrice}
+      <span style={{ fontSize: "smaller", marginLeft: 8 }}>
+        (Prints ₹{printCost} + Binding ₹{bindingCost})
+      </span>
+    </p>
 
-                /* {studentDiscount > 0 && (
-                  <p>Student Discount on Prints: -₹{studentDiscount}</p>
-                )} */
+    {couponDiscountValue > 0 && (
+      <p>Coupon Discount: -₹{couponDiscountValue}</p>
+    )}
 
-                {couponDiscountValue > 0 && (
-                  <p>Coupon Discount: -₹{couponDiscountValue}</p>
-                )}
-
-                <p>Final Price: ₹{discountPrice}</p>
-                <p>
-                  Payment Method:{" "}
-                  <b>
-                    {paymentMethod === "Razorpay"
-                      ? "Online Payment"
-                      : "Pay on Delivery"}
-                  </b>
-                </p>
-              </div>
-            )}
-
+    <p>Final Price: ₹{discountPrice}</p>
+    <p>
+      Payment Method:{" "}
+      <b>
+        {paymentMethod === "Razorpay"
+          ? "Online Payment"
+          : "Pay on Delivery"}
+      </b>
+    </p>
+  </div>
+)}
             {submitError && (
               <div
                 style={{
