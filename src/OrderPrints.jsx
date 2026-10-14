@@ -317,17 +317,20 @@ export default function OrderPrints() {
       default:
         currentBindingCost = 0;
     }
-
     const baseTotal = currentPrintCost + currentBindingCost;
-    // const autoStudentDiscount =
-    //   activeTab === "student" && couponDiscountValue <= 0
-    //     ? currentPrintCost * 0.15
-    //     : 0;
+    const couponVal = Number(couponDiscountValue) || 0;
+    let actualDiscount = 0;
+    
+    if (couponVal > 0) {
+      if (couponVal <= 100) {
+        actualDiscount = Math.round((baseTotal * couponVal) / 100);
+      } else {
+        // If it's a flat amount greater than 100 (like ₹150 off)
+        actualDiscount = Math.min(couponVal, baseTotal);
+      }
+    }
 
-    const finalTotal = Math.max(
-      0,
-      baseTotal - couponDiscountValue,
-    );
+    const finalTotal = Math.max(0, baseTotal - actualDiscount);
 
     setPrintCost(Math.ceil(currentPrintCost));
     setBindingCost(Math.ceil(currentBindingCost));
