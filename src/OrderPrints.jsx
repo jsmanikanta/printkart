@@ -317,26 +317,22 @@ export default function OrderPrints() {
       default:
         currentBindingCost = 0;
     }
-    const baseTotal = currentPrintCost + currentBindingCost;
-    const couponVal = Number(couponDiscountValue) || 0;
-    let actualDiscount = 0;
     
-    if (couponVal > 0) {
-      if (couponVal <= 100) {
-        actualDiscount = Math.round((baseTotal * couponVal) / 100);
-      } else {
-        // If it's a flat amount greater than 100 (like ₹150 off)
-        actualDiscount = Math.min(couponVal, baseTotal);
-      }
-    }
+const baseTotal = currentPrintCost + currentBindingCost;
+const couponPercentage = Number(couponDiscountValue) || 0;
 
-    const finalTotal = Math.max(0, baseTotal - actualDiscount);
+// Always calculate the coupon as a percentage
+const actualDiscount =
+  couponPercentage > 0 && couponPercentage <= 100
+    ? Math.round((baseTotal * couponPercentage) / 100)
+    : 0;
 
-    setPrintCost(Math.ceil(currentPrintCost));
-    setBindingCost(Math.ceil(currentBindingCost));
-    setOriginalPrice(Math.ceil(baseTotal));
-    //setStudentDiscount(Math.ceil(autoStudentDiscount));
-    setDiscountPrice(Math.ceil(finalTotal));
+const finalTotal = Math.max(0, baseTotal - actualDiscount);
+
+setPrintCost(Math.ceil(currentPrintCost));
+setBindingCost(Math.ceil(currentBindingCost));
+setOriginalPrice(Math.ceil(baseTotal));
+setDiscountPrice(Math.ceil(finalTotal));
   }, [color, sides, binding, copies, pages, activeTab, couponDiscountValue]);
 
   const handleFileChange = (e) => {
@@ -1078,8 +1074,11 @@ export default function OrderPrints() {
     </p>
 
     {couponDiscountValue > 0 && (
-      <p>Coupon Discount: -₹{couponDiscountValue}</p>
-    )}
+  <p>
+    Coupon Discount ({couponDiscountValue}%): -₹
+    {Math.round((originalPrice * couponDiscountValue) / 100)}
+  </p>
+)}
 
     <p>Final Price: ₹{discountPrice}</p>
     <p>
