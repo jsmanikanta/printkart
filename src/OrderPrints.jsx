@@ -595,7 +595,7 @@ setDiscountPrice(Math.ceil(finalTotal));
     return data;
   };
 
-  const markPaymentFailed = async ({ printOrderId, razorpayOrderId }) => {
+const markPaymentFailed = async ({ printOrderId, razorpayOrderId, status }) => {
     const freshToken = getFreshToken();
 
     if (!freshToken || !printOrderId || !razorpayOrderId) {
@@ -609,10 +609,7 @@ setDiscountPrice(Math.ceil(finalTotal));
           "Content-Type": "application/json",
           Authorization: `Bearer ${freshToken}`,
         },
-        body: JSON.stringify({
-          printOrderId,
-          razorpayOrderId,
-        }),
+        body: JSON.stringify({ printOrderId, razorpayOrderId, status }),
       });
     } catch (error) {
       console.log("[printkart:OrderPrints] payment-failed update error", error);
