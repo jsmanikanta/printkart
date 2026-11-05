@@ -1075,8 +1075,8 @@ setDiscountPrice(Math.ceil(finalTotal));
 
     {couponDiscountValue > 0 && (
   <p>
-    Coupon Discount ({couponDiscountValue}%): -₹
-    {Math.round((originalPrice * couponDiscountValue) / 100)}
+    Coupon Discount ({couponDiscountValue}%): -
+    {Math.round((originalPrice * couponDiscountValue) / 100)} %
   </p>
 )}
 
