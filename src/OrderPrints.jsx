@@ -419,7 +419,7 @@ setDiscountPrice(Math.ceil(finalTotal));
       setCouponDiscountValue(rawDiscount);
       setCouponInfo({
         type: "success",
-        message: `Coupon applied successfully. Discount: ₹${rawDiscount}`,
+        message: `Coupon applied successfully. Discount: ${rawDiscount}%`,
       });
       console.log("[printkart:OrderPrints] Coupon applied", {
         couponCode,
@@ -1075,8 +1075,8 @@ setDiscountPrice(Math.ceil(finalTotal));
 
     {couponDiscountValue > 0 && (
   <p>
-    Coupon Discount ({couponDiscountValue}%): -
-    {Math.round((originalPrice * couponDiscountValue) / 100)} %
+    Coupon Discount ({couponDiscountValue}%): -₹
+    {Math.round((originalPrice * couponDiscountValue) / 100)}
   </p>
 )}
 
